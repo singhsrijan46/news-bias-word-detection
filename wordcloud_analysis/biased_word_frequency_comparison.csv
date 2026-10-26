@@ -1,0 +1,21 @@
+word,Ground Truth (Human Annotators),Optimized XGBoost (Champion),Random Forest (Weighted),Multilayer Perceptron (MLP),Linear Discriminant Analysis (LDA),B4: Semi-Automated Bias Lexicon,"SVM (RBF Kernel, Weighted)",B2: Negative Sentiment Lexicon,XGBoost (Paper Fine-Tuned),Linear SVM (Weighted),Logistic Regression (Weighted),Complement Naive Bayes
+rhetoric,3,4,4,4,4,4,4,4,4,4,4,4
+white,3,2,3,0,0,0,2,0,8,9,9,9
+propaganda,1,3,3,2,3,3,3,3,3,3,3,3
+political,2,0,0,0,0,0,3,0,3,7,7,7
+endless,0,2,3,2,3,0,3,3,3,3,3,3
+nationalism,1,1,2,2,3,0,3,3,3,3,3,3
+little,2,0,0,0,4,0,0,5,3,4,4,4
+abortion,0,0,0,0,0,0,0,0,2,9,9,5
+ignoring,0,0,2,0,3,3,2,3,3,3,3,3
+corruption,1,0,2,1,3,0,3,3,3,3,3,3
+racist,2,2,2,2,2,2,2,2,2,2,2,2
+corrupt,2,2,2,2,2,2,2,2,2,2,2,2
+intolerant,2,2,2,2,2,2,2,2,2,2,2,2
+crisis,2,0,0,0,0,0,3,5,2,3,3,5
+drastic,2,2,2,2,2,0,2,2,2,2,2,2
+false,2,2,2,2,2,0,2,2,2,2,2,2
+vulnerable,0,2,2,2,2,2,2,2,2,2,2,2
+criticized,0,2,2,2,2,2,2,2,2,2,2,2
+federal,0,0,0,0,0,0,2,0,3,5,5,7
+enormous,0,2,2,2,2,0,2,2,2,2,2,2

@@ -1,0 +1,2078 @@
+{
+  "dataset_summary": {
+    "test_tokens_count": 3114,
+    "ground_truth_biased_count": 302,
+    "ground_truth_bias_rate": 9.7
+  },
+  "models": {
+    "Ground Truth (Human Annotators)": {
+      "total_biased_words_flagged": 302,
+      "overall_bias_rate_pct": 9.7,
+      "disposition_classification": "Ground Truth Reference",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.3321,
+        "pct_flagged_with_negative_sentiment": 47.02,
+        "avg_negative_concreteness": 0.4702
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 21,
+          "bias_rate_pct": 3.53,
+          "disparity_ratio": 1.0
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 139,
+          "bias_rate_pct": 10.97,
+          "disparity_ratio": 1.0
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 142,
+          "bias_rate_pct": 11.34,
+          "disparity_ratio": 1.0
+        }
+      },
+      "pos_distribution_pct": {
+        "ADJ": 36.1,
+        "NOUN": 35.1,
+        "VERB": 23.5,
+        "ADV": 4.6,
+        "PROPN": 0.3
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 86,
+          "bias_rate_pct": 13.21,
+          "disparity_ratio": 1.0
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 76,
+          "bias_rate_pct": 11.36,
+          "disparity_ratio": 1.0
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 46,
+          "bias_rate_pct": 12.67,
+          "disparity_ratio": 1.0
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 20,
+          "bias_rate_pct": 9.09,
+          "disparity_ratio": 1.0
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 19,
+          "bias_rate_pct": 8.41,
+          "disparity_ratio": 1.0
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 34,
+          "bias_rate_pct": 8.72,
+          "disparity_ratio": 1.0
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 9,
+          "bias_rate_pct": 2.8,
+          "disparity_ratio": 1.0
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 12,
+          "bias_rate_pct": 4.4,
+          "disparity_ratio": 1.0
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 24,
+          "bias_rate_pct": 9.8,
+          "disparity_ratio": 1.0
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 19,
+          "bias_rate_pct": 7.63,
+          "disparity_ratio": 1.0
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 22,
+          "bias_rate_pct": 8.15,
+          "disparity_ratio": 1.0
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 21,
+          "bias_rate_pct": 8.9,
+          "disparity_ratio": 1.0
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 31,
+          "bias_rate_pct": 13.42,
+          "disparity_ratio": 1.0
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 22,
+          "bias_rate_pct": 12.79,
+          "disparity_ratio": 1.0
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 20,
+          "bias_rate_pct": 8.16,
+          "disparity_ratio": 1.0
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 15,
+          "bias_rate_pct": 9.68,
+          "disparity_ratio": 1.0
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 23,
+          "bias_rate_pct": 10.65,
+          "disparity_ratio": 1.0
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 13,
+          "bias_rate_pct": 5.73,
+          "disparity_ratio": 1.0
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 18,
+          "bias_rate_pct": 8.0,
+          "disparity_ratio": 1.0
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 25,
+          "bias_rate_pct": 9.77,
+          "disparity_ratio": 1.0
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 16,
+          "bias_rate_pct": 8.7,
+          "disparity_ratio": 1.0
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 33,
+          "bias_rate_pct": 16.26,
+          "disparity_ratio": 1.0
+        }
+      }
+    },
+    "Optimized XGBoost (Champion)": {
+      "total_biased_words_flagged": 98,
+      "overall_bias_rate_pct": 3.15,
+      "disposition_classification": "Hyper-Conservative / Omission Bias (High False Negative Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.3957,
+        "pct_flagged_with_negative_sentiment": 86.73,
+        "avg_negative_concreteness": 0.8673
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 11,
+          "bias_rate_pct": 1.85,
+          "disparity_ratio": 0.52
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 46,
+          "bias_rate_pct": 3.63,
+          "disparity_ratio": 0.33
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 41,
+          "bias_rate_pct": 3.27,
+          "disparity_ratio": 0.29
+        }
+      },
+      "pos_distribution_pct": {
+        "ADJ": 63.3,
+        "VERB": 19.4,
+        "NOUN": 14.3,
+        "ADV": 3.1
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 33,
+          "bias_rate_pct": 5.07,
+          "disparity_ratio": 0.38
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 19,
+          "bias_rate_pct": 2.84,
+          "disparity_ratio": 0.25
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 11,
+          "bias_rate_pct": 3.03,
+          "disparity_ratio": 0.24
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 11,
+          "bias_rate_pct": 5.0,
+          "disparity_ratio": 0.55
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 4,
+          "bias_rate_pct": 1.77,
+          "disparity_ratio": 0.21
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 9,
+          "bias_rate_pct": 2.31,
+          "disparity_ratio": 0.26
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 6,
+          "bias_rate_pct": 1.86,
+          "disparity_ratio": 0.67
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 5,
+          "bias_rate_pct": 1.83,
+          "disparity_ratio": 0.42
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 5,
+          "bias_rate_pct": 2.04,
+          "disparity_ratio": 0.21
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 3,
+          "bias_rate_pct": 1.2,
+          "disparity_ratio": 0.16
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 4,
+          "bias_rate_pct": 1.48,
+          "disparity_ratio": 0.18
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 6,
+          "bias_rate_pct": 2.54,
+          "disparity_ratio": 0.29
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 14,
+          "bias_rate_pct": 6.06,
+          "disparity_ratio": 0.45
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 4,
+          "bias_rate_pct": 2.33,
+          "disparity_ratio": 0.18
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 7,
+          "bias_rate_pct": 2.86,
+          "disparity_ratio": 0.35
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 5,
+          "bias_rate_pct": 3.23,
+          "disparity_ratio": 0.33
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 8,
+          "bias_rate_pct": 3.7,
+          "disparity_ratio": 0.35
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 7,
+          "bias_rate_pct": 3.08,
+          "disparity_ratio": 0.54
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 3,
+          "bias_rate_pct": 1.33,
+          "disparity_ratio": 0.17
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 10,
+          "bias_rate_pct": 3.91,
+          "disparity_ratio": 0.4
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 7,
+          "bias_rate_pct": 3.8,
+          "disparity_ratio": 0.44
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 15,
+          "bias_rate_pct": 7.39,
+          "disparity_ratio": 0.45
+        }
+      }
+    },
+    "Random Forest (Weighted)": {
+      "total_biased_words_flagged": 195,
+      "overall_bias_rate_pct": 6.26,
+      "disposition_classification": "Well-Calibrated Balanced Model",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.559,
+        "pct_flagged_with_negative_sentiment": 85.64,
+        "avg_negative_concreteness": 0.8564
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 24,
+          "bias_rate_pct": 4.03,
+          "disparity_ratio": 1.14
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 89,
+          "bias_rate_pct": 7.02,
+          "disparity_ratio": 0.64
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 82,
+          "bias_rate_pct": 6.55,
+          "disparity_ratio": 0.58
+        }
+      },
+      "pos_distribution_pct": {
+        "ADJ": 47.7,
+        "NOUN": 25.6,
+        "VERB": 22.1,
+        "ADV": 4.6
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 55,
+          "bias_rate_pct": 8.45,
+          "disparity_ratio": 0.64
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 42,
+          "bias_rate_pct": 6.28,
+          "disparity_ratio": 0.55
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 25,
+          "bias_rate_pct": 6.89,
+          "disparity_ratio": 0.54
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 15,
+          "bias_rate_pct": 6.82,
+          "disparity_ratio": 0.75
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 8,
+          "bias_rate_pct": 3.54,
+          "disparity_ratio": 0.42
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 26,
+          "bias_rate_pct": 6.67,
+          "disparity_ratio": 0.76
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 17,
+          "bias_rate_pct": 5.28,
+          "disparity_ratio": 1.89
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 7,
+          "bias_rate_pct": 2.56,
+          "disparity_ratio": 0.58
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 10,
+          "bias_rate_pct": 4.08,
+          "disparity_ratio": 0.42
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 10,
+          "bias_rate_pct": 4.02,
+          "disparity_ratio": 0.53
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 12,
+          "bias_rate_pct": 4.44,
+          "disparity_ratio": 0.55
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 10,
+          "bias_rate_pct": 4.24,
+          "disparity_ratio": 0.48
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 20,
+          "bias_rate_pct": 8.66,
+          "disparity_ratio": 0.65
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 8,
+          "bias_rate_pct": 4.65,
+          "disparity_ratio": 0.36
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 15,
+          "bias_rate_pct": 6.12,
+          "disparity_ratio": 0.75
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 10,
+          "bias_rate_pct": 6.45,
+          "disparity_ratio": 0.67
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 12,
+          "bias_rate_pct": 5.56,
+          "disparity_ratio": 0.52
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 13,
+          "bias_rate_pct": 5.73,
+          "disparity_ratio": 1.0
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 15,
+          "bias_rate_pct": 6.67,
+          "disparity_ratio": 0.83
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 19,
+          "bias_rate_pct": 7.42,
+          "disparity_ratio": 0.76
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 14,
+          "bias_rate_pct": 7.61,
+          "disparity_ratio": 0.88
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 27,
+          "bias_rate_pct": 13.3,
+          "disparity_ratio": 0.82
+        }
+      }
+    },
+    "Multilayer Perceptron (MLP)": {
+      "total_biased_words_flagged": 117,
+      "overall_bias_rate_pct": 3.76,
+      "disposition_classification": "Hyper-Conservative / Omission Bias (High False Negative Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.4313,
+        "pct_flagged_with_negative_sentiment": 86.32,
+        "avg_negative_concreteness": 0.8632
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 19,
+          "bias_rate_pct": 3.19,
+          "disparity_ratio": 0.9
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 53,
+          "bias_rate_pct": 4.18,
+          "disparity_ratio": 0.38
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 45,
+          "bias_rate_pct": 3.59,
+          "disparity_ratio": 0.32
+        }
+      },
+      "pos_distribution_pct": {
+        "ADJ": 54.7,
+        "NOUN": 20.5,
+        "VERB": 16.2,
+        "ADV": 7.7,
+        "INTJ": 0.9
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 36,
+          "bias_rate_pct": 5.53,
+          "disparity_ratio": 0.42
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 19,
+          "bias_rate_pct": 2.84,
+          "disparity_ratio": 0.25
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 17,
+          "bias_rate_pct": 4.68,
+          "disparity_ratio": 0.37
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 9,
+          "bias_rate_pct": 4.09,
+          "disparity_ratio": 0.45
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 4,
+          "bias_rate_pct": 1.77,
+          "disparity_ratio": 0.21
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 13,
+          "bias_rate_pct": 3.33,
+          "disparity_ratio": 0.38
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 12,
+          "bias_rate_pct": 3.73,
+          "disparity_ratio": 1.33
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 7,
+          "bias_rate_pct": 2.56,
+          "disparity_ratio": 0.58
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 7,
+          "bias_rate_pct": 2.86,
+          "disparity_ratio": 0.29
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 5,
+          "bias_rate_pct": 2.01,
+          "disparity_ratio": 0.26
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 8,
+          "bias_rate_pct": 2.96,
+          "disparity_ratio": 0.36
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 8,
+          "bias_rate_pct": 3.39,
+          "disparity_ratio": 0.38
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 13,
+          "bias_rate_pct": 5.63,
+          "disparity_ratio": 0.42
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 4,
+          "bias_rate_pct": 2.33,
+          "disparity_ratio": 0.18
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 10,
+          "bias_rate_pct": 4.08,
+          "disparity_ratio": 0.5
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 4,
+          "bias_rate_pct": 2.58,
+          "disparity_ratio": 0.27
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 8,
+          "bias_rate_pct": 3.7,
+          "disparity_ratio": 0.35
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 6,
+          "bias_rate_pct": 2.64,
+          "disparity_ratio": 0.46
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 7,
+          "bias_rate_pct": 3.11,
+          "disparity_ratio": 0.39
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 10,
+          "bias_rate_pct": 3.91,
+          "disparity_ratio": 0.4
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 9,
+          "bias_rate_pct": 4.89,
+          "disparity_ratio": 0.56
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 18,
+          "bias_rate_pct": 8.87,
+          "disparity_ratio": 0.55
+        }
+      }
+    },
+    "Linear Discriminant Analysis (LDA)": {
+      "total_biased_words_flagged": 212,
+      "overall_bias_rate_pct": 6.81,
+      "disposition_classification": "Well-Calibrated Balanced Model",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.609,
+        "pct_flagged_with_negative_sentiment": 88.68,
+        "avg_negative_concreteness": 0.8868
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 31,
+          "bias_rate_pct": 5.21,
+          "disparity_ratio": 1.48
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 98,
+          "bias_rate_pct": 7.73,
+          "disparity_ratio": 0.71
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 83,
+          "bias_rate_pct": 6.63,
+          "disparity_ratio": 0.58
+        }
+      },
+      "pos_distribution_pct": {
+        "ADJ": 45.8,
+        "NOUN": 25.9,
+        "VERB": 21.7,
+        "ADV": 6.6
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 62,
+          "bias_rate_pct": 9.52,
+          "disparity_ratio": 0.72
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 43,
+          "bias_rate_pct": 6.43,
+          "disparity_ratio": 0.57
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 26,
+          "bias_rate_pct": 7.16,
+          "disparity_ratio": 0.57
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 14,
+          "bias_rate_pct": 6.36,
+          "disparity_ratio": 0.7
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 11,
+          "bias_rate_pct": 4.87,
+          "disparity_ratio": 0.58
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 25,
+          "bias_rate_pct": 6.41,
+          "disparity_ratio": 0.74
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 18,
+          "bias_rate_pct": 5.59,
+          "disparity_ratio": 2.0
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 13,
+          "bias_rate_pct": 4.76,
+          "disparity_ratio": 1.08
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 13,
+          "bias_rate_pct": 5.31,
+          "disparity_ratio": 0.54
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 14,
+          "bias_rate_pct": 5.62,
+          "disparity_ratio": 0.74
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 16,
+          "bias_rate_pct": 5.93,
+          "disparity_ratio": 0.73
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 13,
+          "bias_rate_pct": 5.51,
+          "disparity_ratio": 0.62
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 20,
+          "bias_rate_pct": 8.66,
+          "disparity_ratio": 0.65
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 9,
+          "bias_rate_pct": 5.23,
+          "disparity_ratio": 0.41
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 15,
+          "bias_rate_pct": 6.12,
+          "disparity_ratio": 0.75
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 9,
+          "bias_rate_pct": 5.81,
+          "disparity_ratio": 0.6
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 15,
+          "bias_rate_pct": 6.94,
+          "disparity_ratio": 0.65
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 16,
+          "bias_rate_pct": 7.05,
+          "disparity_ratio": 1.23
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 12,
+          "bias_rate_pct": 5.33,
+          "disparity_ratio": 0.67
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 22,
+          "bias_rate_pct": 8.59,
+          "disparity_ratio": 0.88
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 14,
+          "bias_rate_pct": 7.61,
+          "disparity_ratio": 0.88
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 24,
+          "bias_rate_pct": 11.82,
+          "disparity_ratio": 0.73
+        }
+      }
+    },
+    "B4: Semi-Automated Bias Lexicon": {
+      "total_biased_words_flagged": 58,
+      "overall_bias_rate_pct": 1.86,
+      "disposition_classification": "Hyper-Conservative / Omission Bias (High False Negative Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.2508,
+        "pct_flagged_with_negative_sentiment": 74.14,
+        "avg_negative_concreteness": 0.7414
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 3,
+          "bias_rate_pct": 0.5,
+          "disparity_ratio": 0.14
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 31,
+          "bias_rate_pct": 2.45,
+          "disparity_ratio": 0.22
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 24,
+          "bias_rate_pct": 1.92,
+          "disparity_ratio": 0.17
+        }
+      },
+      "pos_distribution_pct": {
+        "NOUN": 31.0,
+        "ADJ": 31.0,
+        "VERB": 29.3,
+        "ADV": 8.6
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 20,
+          "bias_rate_pct": 3.07,
+          "disparity_ratio": 0.23
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 13,
+          "bias_rate_pct": 1.94,
+          "disparity_ratio": 0.17
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 8,
+          "bias_rate_pct": 2.2,
+          "disparity_ratio": 0.17
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 3,
+          "bias_rate_pct": 1.36,
+          "disparity_ratio": 0.15
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 4,
+          "bias_rate_pct": 1.77,
+          "disparity_ratio": 0.21
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 7,
+          "bias_rate_pct": 1.79,
+          "disparity_ratio": 0.21
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 1,
+          "bias_rate_pct": 0.31,
+          "disparity_ratio": 0.11
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 2,
+          "bias_rate_pct": 0.73,
+          "disparity_ratio": 0.17
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 3,
+          "bias_rate_pct": 1.22,
+          "disparity_ratio": 0.12
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 1,
+          "bias_rate_pct": 0.4,
+          "disparity_ratio": 0.05
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 3,
+          "bias_rate_pct": 1.11,
+          "disparity_ratio": 0.14
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 2,
+          "bias_rate_pct": 0.85,
+          "disparity_ratio": 0.1
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 8,
+          "bias_rate_pct": 3.46,
+          "disparity_ratio": 0.26
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 2,
+          "bias_rate_pct": 1.16,
+          "disparity_ratio": 0.09
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 7,
+          "bias_rate_pct": 2.86,
+          "disparity_ratio": 0.35
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 5,
+          "bias_rate_pct": 3.23,
+          "disparity_ratio": 0.33
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 3,
+          "bias_rate_pct": 1.39,
+          "disparity_ratio": 0.13
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 2,
+          "bias_rate_pct": 0.88,
+          "disparity_ratio": 0.15
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 2,
+          "bias_rate_pct": 0.89,
+          "disparity_ratio": 0.11
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 4,
+          "bias_rate_pct": 1.56,
+          "disparity_ratio": 0.16
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 5,
+          "bias_rate_pct": 2.72,
+          "disparity_ratio": 0.31
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 11,
+          "bias_rate_pct": 5.42,
+          "disparity_ratio": 0.33
+        }
+      }
+    },
+    "SVM (RBF Kernel, Weighted)": {
+      "total_biased_words_flagged": 348,
+      "overall_bias_rate_pct": 11.18,
+      "disposition_classification": "Well-Calibrated Balanced Model",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.3878,
+        "pct_flagged_with_negative_sentiment": 49.71,
+        "avg_negative_concreteness": 0.4971
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 49,
+          "bias_rate_pct": 8.24,
+          "disparity_ratio": 2.33
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 158,
+          "bias_rate_pct": 12.47,
+          "disparity_ratio": 1.14
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 141,
+          "bias_rate_pct": 11.26,
+          "disparity_ratio": 0.99
+        }
+      },
+      "pos_distribution_pct": {
+        "NOUN": 38.5,
+        "ADJ": 30.7,
+        "VERB": 25.3,
+        "ADV": 5.5
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 90,
+          "bias_rate_pct": 13.82,
+          "disparity_ratio": 1.05
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 84,
+          "bias_rate_pct": 12.56,
+          "disparity_ratio": 1.11
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 38,
+          "bias_rate_pct": 10.47,
+          "disparity_ratio": 0.83
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 19,
+          "bias_rate_pct": 8.64,
+          "disparity_ratio": 0.95
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 21,
+          "bias_rate_pct": 9.29,
+          "disparity_ratio": 1.11
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 47,
+          "bias_rate_pct": 12.05,
+          "disparity_ratio": 1.38
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 29,
+          "bias_rate_pct": 9.01,
+          "disparity_ratio": 3.22
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 20,
+          "bias_rate_pct": 7.33,
+          "disparity_ratio": 1.67
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 23,
+          "bias_rate_pct": 9.39,
+          "disparity_ratio": 0.96
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 25,
+          "bias_rate_pct": 10.04,
+          "disparity_ratio": 1.32
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 30,
+          "bias_rate_pct": 11.11,
+          "disparity_ratio": 1.36
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 23,
+          "bias_rate_pct": 9.75,
+          "disparity_ratio": 1.1
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 32,
+          "bias_rate_pct": 13.85,
+          "disparity_ratio": 1.03
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 19,
+          "bias_rate_pct": 11.05,
+          "disparity_ratio": 0.86
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 31,
+          "bias_rate_pct": 12.65,
+          "disparity_ratio": 1.55
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 19,
+          "bias_rate_pct": 12.26,
+          "disparity_ratio": 1.27
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 21,
+          "bias_rate_pct": 9.72,
+          "disparity_ratio": 0.91
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 19,
+          "bias_rate_pct": 8.37,
+          "disparity_ratio": 1.46
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 23,
+          "bias_rate_pct": 10.22,
+          "disparity_ratio": 1.28
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 21,
+          "bias_rate_pct": 8.2,
+          "disparity_ratio": 0.84
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 24,
+          "bias_rate_pct": 13.04,
+          "disparity_ratio": 1.5
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 38,
+          "bias_rate_pct": 18.72,
+          "disparity_ratio": 1.15
+        }
+      }
+    },
+    "B2: Negative Sentiment Lexicon": {
+      "total_biased_words_flagged": 404,
+      "overall_bias_rate_pct": 12.97,
+      "disposition_classification": "Well-Calibrated Balanced Model",
+      "sentiment_conflation": {
+        "sentiment_correlation": 1.0,
+        "pct_flagged_with_negative_sentiment": 100.0,
+        "avg_negative_concreteness": 1.0
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 70,
+          "bias_rate_pct": 11.76,
+          "disparity_ratio": 3.33
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 176,
+          "bias_rate_pct": 13.89,
+          "disparity_ratio": 1.27
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 158,
+          "bias_rate_pct": 12.62,
+          "disparity_ratio": 1.11
+        }
+      },
+      "pos_distribution_pct": {
+        "NOUN": 40.3,
+        "VERB": 28.5,
+        "ADJ": 26.0,
+        "ADV": 3.5,
+        "PROPN": 1.0
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 98,
+          "bias_rate_pct": 15.05,
+          "disparity_ratio": 1.14
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 87,
+          "bias_rate_pct": 13.0,
+          "disparity_ratio": 1.14
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 43,
+          "bias_rate_pct": 11.85,
+          "disparity_ratio": 0.93
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 28,
+          "bias_rate_pct": 12.73,
+          "disparity_ratio": 1.4
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 24,
+          "bias_rate_pct": 10.62,
+          "disparity_ratio": 1.26
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 54,
+          "bias_rate_pct": 13.85,
+          "disparity_ratio": 1.59
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 37,
+          "bias_rate_pct": 11.49,
+          "disparity_ratio": 4.11
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 33,
+          "bias_rate_pct": 12.09,
+          "disparity_ratio": 2.75
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 32,
+          "bias_rate_pct": 13.06,
+          "disparity_ratio": 1.33
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 37,
+          "bias_rate_pct": 14.86,
+          "disparity_ratio": 1.95
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 32,
+          "bias_rate_pct": 11.85,
+          "disparity_ratio": 1.45
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 26,
+          "bias_rate_pct": 11.02,
+          "disparity_ratio": 1.24
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 25,
+          "bias_rate_pct": 10.82,
+          "disparity_ratio": 0.81
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 19,
+          "bias_rate_pct": 11.05,
+          "disparity_ratio": 0.86
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 33,
+          "bias_rate_pct": 13.47,
+          "disparity_ratio": 1.65
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 17,
+          "bias_rate_pct": 10.97,
+          "disparity_ratio": 1.13
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 23,
+          "bias_rate_pct": 10.65,
+          "disparity_ratio": 1.0
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 28,
+          "bias_rate_pct": 12.33,
+          "disparity_ratio": 2.15
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 28,
+          "bias_rate_pct": 12.44,
+          "disparity_ratio": 1.56
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 44,
+          "bias_rate_pct": 17.19,
+          "disparity_ratio": 1.76
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 29,
+          "bias_rate_pct": 15.76,
+          "disparity_ratio": 1.81
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 31,
+          "bias_rate_pct": 15.27,
+          "disparity_ratio": 0.94
+        }
+      }
+    },
+    "XGBoost (Paper Fine-Tuned)": {
+      "total_biased_words_flagged": 609,
+      "overall_bias_rate_pct": 19.56,
+      "disposition_classification": "Hyper-Alarmist / Over-Predictor (High False Discovery Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.4987,
+        "pct_flagged_with_negative_sentiment": 46.96,
+        "avg_negative_concreteness": 0.4696
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 88,
+          "bias_rate_pct": 14.79,
+          "disparity_ratio": 4.19
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 268,
+          "bias_rate_pct": 21.15,
+          "disparity_ratio": 1.93
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 253,
+          "bias_rate_pct": 20.21,
+          "disparity_ratio": 1.78
+        }
+      },
+      "pos_distribution_pct": {
+        "NOUN": 34.2,
+        "ADJ": 30.0,
+        "VERB": 28.2,
+        "ADV": 7.2,
+        "PROPN": 0.2
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 157,
+          "bias_rate_pct": 24.12,
+          "disparity_ratio": 1.83
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 140,
+          "bias_rate_pct": 20.93,
+          "disparity_ratio": 1.84
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 72,
+          "bias_rate_pct": 19.83,
+          "disparity_ratio": 1.57
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 41,
+          "bias_rate_pct": 18.64,
+          "disparity_ratio": 2.05
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 33,
+          "bias_rate_pct": 14.6,
+          "disparity_ratio": 1.74
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 78,
+          "bias_rate_pct": 20.0,
+          "disparity_ratio": 2.29
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 50,
+          "bias_rate_pct": 15.53,
+          "disparity_ratio": 5.56
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 38,
+          "bias_rate_pct": 13.92,
+          "disparity_ratio": 3.17
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 43,
+          "bias_rate_pct": 17.55,
+          "disparity_ratio": 1.79
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 38,
+          "bias_rate_pct": 15.26,
+          "disparity_ratio": 2.0
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 47,
+          "bias_rate_pct": 17.41,
+          "disparity_ratio": 2.14
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 48,
+          "bias_rate_pct": 20.34,
+          "disparity_ratio": 2.29
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 54,
+          "bias_rate_pct": 23.38,
+          "disparity_ratio": 1.74
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 34,
+          "bias_rate_pct": 19.77,
+          "disparity_ratio": 1.55
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 40,
+          "bias_rate_pct": 16.33,
+          "disparity_ratio": 2.0
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 26,
+          "bias_rate_pct": 16.77,
+          "disparity_ratio": 1.73
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 40,
+          "bias_rate_pct": 18.52,
+          "disparity_ratio": 1.74
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 34,
+          "bias_rate_pct": 14.98,
+          "disparity_ratio": 2.62
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 46,
+          "bias_rate_pct": 20.44,
+          "disparity_ratio": 2.56
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 53,
+          "bias_rate_pct": 20.7,
+          "disparity_ratio": 2.12
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 39,
+          "bias_rate_pct": 21.2,
+          "disparity_ratio": 2.44
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 67,
+          "bias_rate_pct": 33.0,
+          "disparity_ratio": 2.03
+        }
+      }
+    },
+    "Linear SVM (Weighted)": {
+      "total_biased_words_flagged": 805,
+      "overall_bias_rate_pct": 25.85,
+      "disposition_classification": "Hyper-Alarmist / Over-Predictor (High False Discovery Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.5491,
+        "pct_flagged_with_negative_sentiment": 44.22,
+        "avg_negative_concreteness": 0.4422
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 127,
+          "bias_rate_pct": 21.34,
+          "disparity_ratio": 6.05
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 368,
+          "bias_rate_pct": 29.04,
+          "disparity_ratio": 2.65
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 310,
+          "bias_rate_pct": 24.76,
+          "disparity_ratio": 2.18
+        }
+      },
+      "pos_distribution_pct": {
+        "NOUN": 34.2,
+        "ADJ": 31.1,
+        "VERB": 27.8,
+        "ADV": 7.0
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 221,
+          "bias_rate_pct": 33.95,
+          "disparity_ratio": 2.57
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 173,
+          "bias_rate_pct": 25.86,
+          "disparity_ratio": 2.28
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 93,
+          "bias_rate_pct": 25.62,
+          "disparity_ratio": 2.02
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 44,
+          "bias_rate_pct": 20.0,
+          "disparity_ratio": 2.2
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 47,
+          "bias_rate_pct": 20.8,
+          "disparity_ratio": 2.47
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 100,
+          "bias_rate_pct": 25.64,
+          "disparity_ratio": 2.94
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 74,
+          "bias_rate_pct": 22.98,
+          "disparity_ratio": 8.22
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 53,
+          "bias_rate_pct": 19.41,
+          "disparity_ratio": 4.42
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 67,
+          "bias_rate_pct": 27.35,
+          "disparity_ratio": 2.79
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 59,
+          "bias_rate_pct": 23.69,
+          "disparity_ratio": 3.11
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 66,
+          "bias_rate_pct": 24.44,
+          "disparity_ratio": 3.0
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 60,
+          "bias_rate_pct": 25.42,
+          "disparity_ratio": 2.86
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 63,
+          "bias_rate_pct": 27.27,
+          "disparity_ratio": 2.03
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 50,
+          "bias_rate_pct": 29.07,
+          "disparity_ratio": 2.27
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 55,
+          "bias_rate_pct": 22.45,
+          "disparity_ratio": 2.75
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 39,
+          "bias_rate_pct": 25.16,
+          "disparity_ratio": 2.6
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 56,
+          "bias_rate_pct": 25.93,
+          "disparity_ratio": 2.43
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 40,
+          "bias_rate_pct": 17.62,
+          "disparity_ratio": 3.08
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 54,
+          "bias_rate_pct": 24.0,
+          "disparity_ratio": 3.0
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 68,
+          "bias_rate_pct": 26.56,
+          "disparity_ratio": 2.72
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 49,
+          "bias_rate_pct": 26.63,
+          "disparity_ratio": 3.06
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 79,
+          "bias_rate_pct": 38.92,
+          "disparity_ratio": 2.39
+        }
+      }
+    },
+    "Logistic Regression (Weighted)": {
+      "total_biased_words_flagged": 812,
+      "overall_bias_rate_pct": 26.08,
+      "disposition_classification": "Hyper-Alarmist / Over-Predictor (High False Discovery Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.5413,
+        "pct_flagged_with_negative_sentiment": 43.6,
+        "avg_negative_concreteness": 0.436
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 127,
+          "bias_rate_pct": 21.34,
+          "disparity_ratio": 6.05
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 375,
+          "bias_rate_pct": 29.6,
+          "disparity_ratio": 2.7
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 310,
+          "bias_rate_pct": 24.76,
+          "disparity_ratio": 2.18
+        }
+      },
+      "pos_distribution_pct": {
+        "NOUN": 35.1,
+        "ADJ": 30.9,
+        "VERB": 27.1,
+        "ADV": 6.9
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 224,
+          "bias_rate_pct": 34.41,
+          "disparity_ratio": 2.6
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 172,
+          "bias_rate_pct": 25.71,
+          "disparity_ratio": 2.26
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 94,
+          "bias_rate_pct": 25.9,
+          "disparity_ratio": 2.04
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 44,
+          "bias_rate_pct": 20.0,
+          "disparity_ratio": 2.2
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 49,
+          "bias_rate_pct": 21.68,
+          "disparity_ratio": 2.58
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 102,
+          "bias_rate_pct": 26.15,
+          "disparity_ratio": 3.0
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 75,
+          "bias_rate_pct": 23.29,
+          "disparity_ratio": 8.33
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 52,
+          "bias_rate_pct": 19.05,
+          "disparity_ratio": 4.33
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 69,
+          "bias_rate_pct": 28.16,
+          "disparity_ratio": 2.88
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 60,
+          "bias_rate_pct": 24.1,
+          "disparity_ratio": 3.16
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 65,
+          "bias_rate_pct": 24.07,
+          "disparity_ratio": 2.95
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 61,
+          "bias_rate_pct": 25.85,
+          "disparity_ratio": 2.9
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 62,
+          "bias_rate_pct": 26.84,
+          "disparity_ratio": 2.0
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 50,
+          "bias_rate_pct": 29.07,
+          "disparity_ratio": 2.27
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 56,
+          "bias_rate_pct": 22.86,
+          "disparity_ratio": 2.8
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 36,
+          "bias_rate_pct": 23.23,
+          "disparity_ratio": 2.4
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 58,
+          "bias_rate_pct": 26.85,
+          "disparity_ratio": 2.52
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 40,
+          "bias_rate_pct": 17.62,
+          "disparity_ratio": 3.08
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 56,
+          "bias_rate_pct": 24.89,
+          "disparity_ratio": 3.11
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 70,
+          "bias_rate_pct": 27.34,
+          "disparity_ratio": 2.8
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 51,
+          "bias_rate_pct": 27.72,
+          "disparity_ratio": 3.19
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 78,
+          "bias_rate_pct": 38.42,
+          "disparity_ratio": 2.36
+        }
+      }
+    },
+    "Complement Naive Bayes": {
+      "total_biased_words_flagged": 992,
+      "overall_bias_rate_pct": 31.86,
+      "disposition_classification": "Hyper-Alarmist / Over-Predictor (High False Discovery Rate)",
+      "sentiment_conflation": {
+        "sentiment_correlation": 0.4888,
+        "pct_flagged_with_negative_sentiment": 37.0,
+        "avg_negative_concreteness": 0.37
+      },
+      "political_leaning_bias": {
+        "center": {
+          "total_words": 595,
+          "biased_flagged": 153,
+          "bias_rate_pct": 25.71,
+          "disparity_ratio": 7.29
+        },
+        "left": {
+          "total_words": 1267,
+          "biased_flagged": 450,
+          "bias_rate_pct": 35.52,
+          "disparity_ratio": 3.24
+        },
+        "right": {
+          "total_words": 1252,
+          "biased_flagged": 389,
+          "bias_rate_pct": 31.07,
+          "disparity_ratio": 2.74
+        }
+      },
+      "pos_distribution_pct": {
+        "ADJ": 32.3,
+        "VERB": 31.4,
+        "NOUN": 29.1,
+        "ADV": 7.0,
+        "INTJ": 0.3
+      },
+      "outlets": {
+        "alternet": {
+          "total_words": 651,
+          "biased_words_flagged": 261,
+          "bias_rate_pct": 40.09,
+          "disparity_ratio": 3.03
+        },
+        "breitbart": {
+          "total_words": 669,
+          "biased_words_flagged": 217,
+          "bias_rate_pct": 32.44,
+          "disparity_ratio": 2.86
+        },
+        "federalist": {
+          "total_words": 363,
+          "biased_words_flagged": 121,
+          "bias_rate_pct": 33.33,
+          "disparity_ratio": 2.63
+        },
+        "fox-news": {
+          "total_words": 220,
+          "biased_words_flagged": 51,
+          "bias_rate_pct": 23.18,
+          "disparity_ratio": 2.55
+        },
+        "huffpost": {
+          "total_words": 226,
+          "biased_words_flagged": 62,
+          "bias_rate_pct": 27.43,
+          "disparity_ratio": 3.26
+        },
+        "msnbc": {
+          "total_words": 390,
+          "biased_words_flagged": 127,
+          "bias_rate_pct": 32.56,
+          "disparity_ratio": 3.74
+        },
+        "reuters": {
+          "total_words": 322,
+          "biased_words_flagged": 87,
+          "bias_rate_pct": 27.02,
+          "disparity_ratio": 9.67
+        },
+        "usa-today": {
+          "total_words": 273,
+          "biased_words_flagged": 66,
+          "bias_rate_pct": 24.18,
+          "disparity_ratio": 5.5
+        }
+      },
+      "topics": {
+        "abortion": {
+          "total_words": 245,
+          "biased_flagged": 83,
+          "bias_rate_pct": 33.88,
+          "disparity_ratio": 3.46
+        },
+        "coronavirus": {
+          "total_words": 249,
+          "biased_flagged": 70,
+          "bias_rate_pct": 28.11,
+          "disparity_ratio": 3.68
+        },
+        "elections-2020": {
+          "total_words": 270,
+          "biased_flagged": 85,
+          "bias_rate_pct": 31.48,
+          "disparity_ratio": 3.86
+        },
+        "environment": {
+          "total_words": 236,
+          "biased_flagged": 64,
+          "bias_rate_pct": 27.12,
+          "disparity_ratio": 3.05
+        },
+        "gender": {
+          "total_words": 231,
+          "biased_flagged": 78,
+          "bias_rate_pct": 33.77,
+          "disparity_ratio": 2.52
+        },
+        "gun-control": {
+          "total_words": 172,
+          "biased_flagged": 62,
+          "bias_rate_pct": 36.05,
+          "disparity_ratio": 2.82
+        },
+        "immigration": {
+          "total_words": 245,
+          "biased_flagged": 76,
+          "bias_rate_pct": 31.02,
+          "disparity_ratio": 3.8
+        },
+        "international-politics-and-world-news": {
+          "total_words": 155,
+          "biased_flagged": 40,
+          "bias_rate_pct": 25.81,
+          "disparity_ratio": 2.67
+        },
+        "middle-class": {
+          "total_words": 216,
+          "biased_flagged": 72,
+          "bias_rate_pct": 33.33,
+          "disparity_ratio": 3.13
+        },
+        "sport": {
+          "total_words": 227,
+          "biased_flagged": 48,
+          "bias_rate_pct": 21.15,
+          "disparity_ratio": 3.69
+        },
+        "student-debt": {
+          "total_words": 225,
+          "biased_flagged": 73,
+          "bias_rate_pct": 32.44,
+          "disparity_ratio": 4.06
+        },
+        "trump-presidency": {
+          "total_words": 256,
+          "biased_flagged": 86,
+          "bias_rate_pct": 33.59,
+          "disparity_ratio": 3.44
+        },
+        "vaccines": {
+          "total_words": 184,
+          "biased_flagged": 68,
+          "bias_rate_pct": 36.96,
+          "disparity_ratio": 4.25
+        },
+        "white-nationalism": {
+          "total_words": 203,
+          "biased_flagged": 87,
+          "bias_rate_pct": 42.86,
+          "disparity_ratio": 2.64
+        }
+      }
+    }
+  }
+}

@@ -6,7 +6,7 @@
 
 [![Python Version](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.14-blue.svg)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Tests: 15 Passed](https://img.shields.io/badge/pytest-15%20passed-brightgreen.svg)](tests/)
+[![Tests: 20 Passed](https://img.shields.io/badge/pytest-20%20passed-brightgreen.svg)](tests/)
 [![Paper DOI](https://img.shields.io/badge/DOI-10.1016%2Fj.ipm.2021.102505-blue)](https://doi.org/10.1016/j.ipm.2021.102505)
 
 ---
@@ -28,7 +28,7 @@ This project solves that exact challenge using Artificial Intelligence:
 
 ## 📁 2. Repository Structure: Where Everything Lives
 
-To make this project clean, professional, and easy to explore, the work is organized into two primary folders:
+To make this project clean, professional, and easy to explore, the work is organized into three primary modules:
 
 ```
 news-bias-word-detection/
@@ -41,11 +41,6 @@ news-bias-word-detection/
 │   ├── comparison_summary.json     # Machine-readable evaluation results
 │   ├── README.md                   # Guide to the comparison suite
 │   └── plots/                      # 5 Publication-Quality Visualizations
-│       ├── 1_model_accuracy_comparison.png
-│       ├── 2_confusion_matrices_grid.png
-│       ├── 3_correct_vs_failed_word_counts.png
-│       ├── 4_comprehensive_metrics_comparison.png
-│       └── 5_error_distribution_breakdown.png
 │
 ├── 📂 optimized_model/              # FOLDER 2: Our Engineered Champion Model
 │   ├── model_pipeline.py           # Production OptimizedNewsBiasClassifier class
@@ -58,20 +53,32 @@ news-bias-word-detection/
 │   │   └── optimized_xgboost.joblib# Serialized champion model weights & threshold
 │   ├── README.md                   # Guide to the optimized model
 │   └── plots/                      # 5 Visual Graphs Proving Champion Status
-│       ├── 1_accuracy_champion_comparison.png
-│       ├── 2_confusion_matrix_optimized.png
-│       ├── 3_roc_and_precision_recall_curves.png
-│       ├── 4_feature_importance_ranking.png
-│       └── 5_threshold_optimization_curve.png
+│
+├── 📂 wordcloud_analysis/           # FOLDER 3: Biased Word Clouds & Model Self-Bias Audit
+│   ├── wordcloud_comparator.py     # Multi-model word cloud engine & self-bias evaluation
+│   ├── run_wordcloud_analysis.bat  # 1-Click Windows runner
+│   ├── MODEL_BIAS_AND_WORDCLOUD_REPORT.md # Empirical audit of model intrinsic bias
+│   ├── biased_word_frequency_comparison.csv # Cross-model word frequency spreadsheet
+│   ├── model_intrinsic_bias_metrics.json    # Full numerical metrics (outlet, topic, POS, sentiment)
+│   ├── model_outlet_and_topic_bias.csv      # Bias rate disparity breakdown
+│   ├── README.md                   # Guide to word cloud & self-bias suite
+│   └── plots/                      # 5 Publication-Grade Figures & 12 Standalone Word Clouds
+│       ├── 1_master_wordcloud_grid.png
+│       ├── 2_top_biased_words_frequency_comparison.png
+│       ├── 3_false_positives_vs_negatives_wordclouds.png
+│       ├── 4_model_outlet_and_topic_bias_disparity.png
+│       ├── 5_sentiment_conflation_and_pos_bias.png
+│       └── individual_wordclouds/  # 12 Individual model word cloud images
 │
 ├── 📂 data/                         # MBIC Dataset & Lexica
 │   ├── raw/                        # 1,700 news statements & 784 annotators metadata
 │   └── processed/                  # Token-level dataset (dt_final.parquet: 31,794 words)
-├── 📂 tests/                        # Automated Pytest Suite (15 unit tests)
+├── 📂 tests/                        # Automated Pytest Suite (20 unit tests)
 │   ├── test_data_loader.py
 │   ├── test_baselines.py
 │   ├── test_model_comparison.py
-│   └── test_optimized_model.py
+│   ├── test_optimized_model.py
+│   └── test_wordcloud_analysis.py
 └── README.md                       # Main Project Documentation (You are here)
 ```
 
@@ -260,7 +267,35 @@ When tested on the exact same held-out test split (3,114 words), our Optimized C
 
 ---
 
-## 💻 9. How to Run Everything (1-Click Instructions)
+## ☁️ 9. Biased Word Clouds & Model Self-Bias Audit
+
+To answer our mentor's key questions, we built a comprehensive multi-model word cloud benchmark and evaluated **whether the models are biased in themselves**:
+
+### Master Word Cloud Grid
+We generated standalone and comparative word clouds across Ground Truth and all 11 AI models:
+- **Master 12-Panel Grid**: [`wordcloud_analysis/plots/1_master_wordcloud_grid.png`](wordcloud_analysis/plots/1_master_wordcloud_grid.png)
+- **Top Biased Words Frequency Chart**: [`wordcloud_analysis/plots/2_top_biased_words_frequency_comparison.png`](wordcloud_analysis/plots/2_top_biased_words_frequency_comparison.png)
+- **False Alarms vs. Missed Bias Clouds**: [`wordcloud_analysis/plots/3_false_positives_vs_negatives_wordclouds.png`](wordcloud_analysis/plots/3_false_positives_vs_negatives_wordclouds.png)
+- **Outlet & Leaning Disparity Analysis**: [`wordcloud_analysis/plots/4_model_outlet_and_topic_bias_disparity.png`](wordcloud_analysis/plots/4_model_outlet_and_topic_bias_disparity.png)
+- **Sentiment Conflation & Part-of-Speech Bias**: [`wordcloud_analysis/plots/5_sentiment_conflation_and_pos_bias.png`](wordcloud_analysis/plots/5_sentiment_conflation_and_pos_bias.png)
+
+### Key Empirical Findings: Is the Model Biased in Itself?
+1. **Adjective Saliency Bias**:  
+   Human annotators identify bias across adjectives (36.1%), nouns (35.1%), and verbs (23.5%). AI models, however, disproportionately flag **adjectives (63.3%)**, missing subtle structural bias in nouns (*regime*, *propaganda*) and verbs (*swarm*, *infiltrate*).
+2. **Sentiment Conflation Bias (Affective Skew)**:  
+   Uncalibrated models confuse *negative factual reporting* (*crisis*, *death*, *fatal*, *killed*) with bias, exhibiting strong positive correlation ($r \approx 0.38 - 0.45$) with negative sentiment dictionaries.
+3. **Entity & Topic Saliency (False Alarms)**:  
+   Models like Linear SVM and Complement Naive Bayes falsely flag neutral political nouns (*abortion*, *federal*, *presidential*, *senate*) up to 9 times each simply because they co-occur in controversial articles.
+4. **Model Disposition Profiles**:  
+   - *Hyper-Alarmist*: Complement Naive Bayes (992 words flagged, 3.3x human rate) and Linear SVM.
+   - *Hyper-Conservative*: MLP and B4 Lexicon (miss up to 88% of real biased tokens).
+   - *Calibrated Champion*: Our Optimized XGBoost achieves 73.5% precision and cuts false alarms by 93.5%.
+
+See [`wordcloud_analysis/MODEL_BIAS_AND_WORDCLOUD_REPORT.md`](wordcloud_analysis/MODEL_BIAS_AND_WORDCLOUD_REPORT.md) for the full scientific breakdown.
+
+---
+
+## 💻 10. How to Run Everything (1-Click Instructions)
 
 Everything in this project is pre-configured to run out of the box with zero setup hassle.
 
@@ -268,75 +303,58 @@ Everything in this project is pre-configured to run out of the box with zero set
 ```bash
 python -m pytest tests/ -v
 ```
-*Expected: 15 passed in ~12 seconds.*
+*Expected: 20 passed in ~5 seconds.*
 
 ---
 
 ### Folder 1: Run Top 10 Model Comparison
 
 #### Option A: On Windows (Double-Click)
-Double-click [`model_comparison/run_comparison.bat`](file:///c:/Users/NEERAV%20MISHRA/OneDrive/Documents/Projects/TAI-group-project/model_comparison/run_comparison.bat).
+Double-click [`model_comparison/run_comparison.bat`](model_comparison/run_comparison.bat).
 
 #### Option B: From Command Line / Terminal
 ```bash
 python model_comparison/compare_models.py
 ```
-*What this generates:*
-- `model_comparison/MODEL_COMPARISON_REPORT.md`
-- `model_comparison/model_comparison_table.csv`
-- `model_comparison/comparison_summary.json`
-- 5 high-resolution PNG graphs in `model_comparison/plots/`
 
 ---
 
 ### Folder 2: Run Optimized Champion Model
 
 #### Option A: On Windows (Double-Click)
-Double-click [`optimized_model/run_optimized_model.bat`](file:///c:/Users/NEERAV%20MISHRA/OneDrive/Documents/Projects/TAI-group-project/optimized_model/run_optimized_model.bat).
+Double-click [`optimized_model/run_optimized_model.bat`](optimized_model/run_optimized_model.bat).
 
 #### Option B: Train & Evaluate via Command Line
 ```bash
 python optimized_model/train_optimized_model.py
 ```
-*What this generates:*
-- Trains the optimized XGBoost with feature interactions and tunes the threshold
-- Evaluates on held-out test split, verifying **highest accuracy (91.84%)**
-- Saves model checkpoint to `optimized_model/saved_model/optimized_xgboost.joblib`
-- Saves 5 evaluation graphs in `optimized_model/plots/`
-- Generates `optimized_model/OPTIMIZED_MODEL_REPORT.md`
 
 #### Option C: Test Interactive Prediction on Any News Sentence
 ```bash
-# Run demonstration on benchmark news sentences
-python optimized_model/predict_bias.py
-
-# Test your own custom sentence
 python optimized_model/predict_bias.py --sentence "Fox News attempts to paint the Green New Deal as disastrous."
-```
-
-Example Output:
-```
-==========================================================================================
-[NEWS BIAS TOKEN ANALYSIS]
-==========================================================================================
-Sentence: "Fox News attempts to paint the Green New Deal as disastrous."
-Decision Threshold: tau = 0.55
-------------------------------------------------------------------------------------------
-Word               | Classification   | Probability  | Linguistic Features / Cues
-------------------------------------------------------------------------------------------
-Fox                | Neutral          | 0.4%         | Factual / Neutral Context
-News               | Neutral          | 0.6%         | Factual / Neutral Context
-attempts           | Neutral          | 9.3%         | Factual / Neutral Context
-paint              | Neutral          | 13.2%        | Factual / Neutral Context
-disastrous         | [BIASED]         | 72.5%        | Negative Sentiment, Strong Subjectivity
-==========================================================================================
-[!] Detected 1 Bias-Inducing Words: 'disastrous' (72.5%)
-==========================================================================================
 ```
 
 ---
 
-## 🔬 10. Summary & Academic Citation
+### Folder 3: Run Biased Word Clouds & Model Self-Bias Audit
+
+#### Option A: On Windows (Double-Click)
+Double-click [`wordcloud_analysis/run_wordcloud_analysis.bat`](wordcloud_analysis/run_wordcloud_analysis.bat).
+
+#### Option B: From Command Line / Terminal
+```bash
+python wordcloud_analysis/wordcloud_comparator.py
+```
+*What this generates:*
+- 12 individual high-resolution word clouds in `wordcloud_analysis/plots/individual_wordclouds/`
+- Master 12-panel comparison grid and 4 empirical bias audit charts
+- `wordcloud_analysis/biased_word_frequency_comparison.csv`
+- `wordcloud_analysis/model_intrinsic_bias_metrics.json`
+- `wordcloud_analysis/model_outlet_and_topic_bias.csv`
+
+---
+
+## 🔬 11. Summary & Academic Citation
 
 By combining foundational research with modern feature interaction engineering and calibrated thresholding, this repository bridges the divide between explainable linguistic theory and high-accuracy machine learning.
 
