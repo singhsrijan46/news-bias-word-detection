@@ -181,6 +181,7 @@ def run_final(args, targets, pool_df):
     teacher = train_teacher(targets, args.teacher_epochs, args.seed)
     pool = unlabeled(pool_df.sentence.tolist())
     pseudo = as_targets(teacher.predict(pool))
+    export(teacher, args.out_final_teacher, {"role": "teacher", "training_sentences": len(targets)})
     teacher.release()
     del teacher
     sents, ys = student_data(list(targets), pool, pseudo, args.gold_repeats)
@@ -212,6 +213,8 @@ def main(argv=None):
     parser.add_argument("--final", action="store_true", help="train on everything and export for the board")
     parser.add_argument("--out", default=os.path.join(ROOT, "outputs", "student", "cv"))
     parser.add_argument("--out-final", default=os.path.join(ROOT, "outputs", "student", "final"))
+    parser.add_argument("--out-final-teacher", default=os.path.join(ROOT, "outputs", "student", "final_teacher"),
+                        help="--final also exports the teacher here, for the audits")
     args = parser.parse_args(argv)
     args.out_cv = args.out
     if args.quick:
