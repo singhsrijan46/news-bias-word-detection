@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bias Lens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Bias Lens</h1>
+    <p class="tagline">Which words in this article would readers call biased, and how many would agree?
+      Analysed on this board: your text does not leave your home network.</p>
+  </header>
+
+  <main>
+    <section class="input">
+      <label for="text">News text</label>
+      <textarea id="text" rows="9" placeholder="Paste an article, or a few sentences of one"></textarea>
+      <div class="actions">
+        <button id="analyze" class="primary">Analyze</button>
+        <button id="sample">Try a sample</button>
+        <button id="clear">Clear</button>
+        <span id="status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <section id="results" hidden>
+      <div class="summary">
+        <div id="strip" class="strip" role="img" aria-label="Heat strip, as on the board's LED matrix"></div>
+        <ul id="counts"></ul>
+      </div>
+      <div class="legend">
+        <span class="chip agreed">most readers would flag it</span>
+        <span class="chip contested">readers split</span>
+        <span>Hover over or tap a word to see how many readers would flag it.</span>
+      </div>
+      <article id="article"></article>
+      <div id="top"></div>
+    </section>
+
+    <details class="about">
+      <summary>How to read this</summary>
+      <p>Each highlighted word shows the model's estimate of how many readers in ten would call it biased.</p>
+      <p>The estimate comes from MBIC, a dataset in which about ten crowd workers in the US read each of 1,700
+        news sentences from 2017 to 2020 and marked the words they found biased. The model learned how often
+        those readers agreed, not a single verdict.</p>
+      <ul>
+        <li><span class="chip contested">Readers split</span> marks words that some readers flag and others do not.
+          These words are contested: reasonable readers disagree about them.</li>
+        <li><span class="chip agreed">Most readers would flag it</span> marks words that 6 or more readers in 10 would flag.</li>
+      </ul>
+      <p>A highlight is a prompt to look again, not a ruling. The model reflects those annotators' judgements of
+        US political news in English. It can miss words that are new or rare, and it can be wrong.</p>
+      <p>Privacy: the text is analysed on this board, kept only while it is being analysed, and not sent anywhere.</p>
+    </details>
+
+    <details class="about">
+      <summary>Send text from your other devices</summary>
+      <p>Drag this link to your browser's bookmarks bar: <a id="bookmarklet" href="#">Bias Lens</a>.
+        On any news page, select some text (or nothing, for the whole page) and click the bookmark.
+        The text goes straight to this board.</p>
+      <p>Programs can call the API:</p>
+      <pre id="curl"></pre>
+    </details>
+  </main>
+
+  <footer id="model"></footer>
+  <script src="app.js"></script>
+</body>
+</html>
