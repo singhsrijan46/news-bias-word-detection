@@ -62,7 +62,8 @@ class Board:
 
     def run(self, *args: str, check: bool = True, capture: bool = False) -> subprocess.CompletedProcess:
         cmd = [self.adb] + (["-s", self.serial] if self.serial else []) + list(args)
-        return subprocess.run(cmd, check=check, text=True, capture_output=capture)
+        # App Lab's output has emoji icons; Windows' default code page cannot decode them.
+        return subprocess.run(cmd, check=check, text=True, capture_output=capture, encoding="utf-8", errors="replace")
 
     def shell(self, command: str, check: bool = True, capture: bool = False) -> subprocess.CompletedProcess:
         return self.run("shell", command, check=check, capture=capture)
@@ -116,15 +117,7 @@ def install(board: Board, model_dir: str) -> None:
 
 
 def app_id(board: Board) -> str:
-    listing = board.shell(f"{CLI} app list --format json", capture=True).stdout
-    try:
-        apps = json.loads(listing)
-        apps = apps.get("apps", apps) if isinstance(apps, dict) else apps
-        for app in apps:
-            if app.get("name") == "Bias Lens" or str(app.get("id", "")).endswith(APP):
-                return app["id"]
-    except (ValueError, AttributeError):
-        pass
+    """App Lab names apps in ~/ArduinoApps "user:<folder>" (its JSON listing gives the IDs in base64)."""
     return f"user:{APP}"
 
 
@@ -143,7 +136,11 @@ def main(argv=None):
     if args.action == "install":
         install(board, args.model_dir)
     elif args.action == "start":
-        board.shell(f"{CLI} app restart {app_id(board)}")
+        # "app stop" sometimes reports success but leaves the container running, after which
+        # "app start" refuses with "App is running"; removing the container clears that.
+        app = app_id(board)
+        board.shell(f"{CLI} app stop {app} >/dev/null 2>&1; docker rm -f {APP}-main-1 >/dev/null 2>&1; "
+                    f"{CLI} app start {app}")
     elif args.action == "stop":
         board.shell(f"{CLI} app stop {app_id(board)}", check=False)
     elif args.action == "logs":
