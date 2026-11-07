@@ -8,6 +8,7 @@ project:
 
 paths:
   raw_sentences: "data/raw/labeled_dataset.xlsx"
+  annotations: "data/raw/annotations.xlsx"  # one row per annotator per sentence
   annotators: "data/raw/annotators.csv"
   seed_biased_words: "data/raw/seed_biased_words.xlsx"
   bias_lexicon_file: "data/raw/bised_words_lexicon.xlsx"
@@ -15,6 +16,7 @@ paths:
   outputs_dir: "outputs"
   eda_dir: "outputs/eda"
   eval_dir: "outputs/evaluation"
+  perspective_dir: "outputs/perspective"
 
 dataset:
   target_label: "label4"  # Word marked as biased if >= 4 crowd annotators agreed
