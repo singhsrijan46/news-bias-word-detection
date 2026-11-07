@@ -1,0 +1,11 @@
+# PC side of the on-device benchmark (export, conversion, summaries).
+# The board side needs only onnxruntime and ncnn; run_on_board.py installs them there.
+torch>=2.1
+transformers>=4.40
+onnx>=1.17
+onnxscript>=0.3
+onnxruntime==1.28.0
+pnnx>=20241223
+ncnn>=1.0.20241226
+pandas>=2.0
+tabulate>=0.9

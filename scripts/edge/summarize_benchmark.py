@@ -57,6 +57,22 @@ def int8_speedups(df: pd.DataFrame) -> pd.DataFrame:
     return out.sort_values(["model", "threads"], key=lambda s: s.map(order) if s.name == "model" else s)
 
 
+def gpu_table(rows: List[dict]) -> pd.DataFrame:
+    """One row per ncnn run (gpu_benchmark.py): speed, CPU load and accuracy against FP32 on the CPU."""
+    flat = {}
+    for r in rows:
+        if "error" in r:
+            continue
+        flat[(r["model"], r["device"])] = {
+            "model": r["model"], "device": r["device"], "sentence_ms": r["sentence"]["median_ms"],
+            "article_s": r["article_sequential"]["median_ms"] / 1000.0, "words_per_s": r["words_per_s_sequential"],
+            "cpu_cores_busy": r["cpu_cores_busy"], "gpu_freq_max_mhz": r["gpu_freq_max_mhz"],
+            "gpu_temp_max_c": r["gpu_temp_max_c"], "max_abs_diff_vs_fp32_cpu": r["max_abs_diff_vs_fp32_cpu"],
+            "outputs_up_to": r["reference_max_abs"],
+        }
+    return pd.DataFrame(list(flat.values()))
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--results", default=os.path.join(ROOT, "outputs", "edge", "results"))
@@ -77,8 +93,14 @@ def main(argv=None):
     sustained_path = os.path.join(args.results, "sustained_summary.jsonl")
     if os.path.exists(sustained_path):
         parts += ["## Sustained runs", "", pd.DataFrame(read_jsonl(sustained_path)).round(2).to_markdown(index=False), ""]
+    gpu_path = os.path.join(args.results, "gpu_results.jsonl")
+    if os.path.exists(gpu_path):
+        gpu_rows = read_jsonl(gpu_path)
+        errors += [r for r in gpu_rows if "error" in r]
+        parts += ["## ncnn: GPU (Vulkan) and CPU", "", gpu_table(gpu_rows).round(4).to_markdown(index=False), ""]
     if errors:
-        parts += [f"{len(errors)} runs failed: " + ", ".join(f"{e['model']} {e['precision']} x{e['threads']}" for e in errors)]
+        parts += [f"{len(errors)} runs failed: " + ", ".join(
+            f"{e['model']} {e.get('precision', e.get('device'))} x{e.get('threads', '')}" for e in errors)]
     text = "\n".join(parts)
     with open(os.path.join(args.results, "summary.md"), "w", encoding="utf-8") as f:
         f.write(text)

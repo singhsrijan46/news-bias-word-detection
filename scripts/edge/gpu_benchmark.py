@@ -60,14 +60,22 @@ class GpuSampler(Sampler):
         return report
 
 
-def make_net(model_dir: str, device: str, threads: int):
+def make_net(model_dir: str, device: str, threads: int, fp32: bool = False):
+    """An ncnn network on the GPU (Vulkan device 0, the Adreno) or the CPU.
+
+    fp32=True turns off ncnn's reduced-precision storage and arithmetic (FP16 and BF16).
+    """
     import ncnn
 
     net = ncnn.Net()
     net.opt.num_threads = threads
     net.opt.use_vulkan_compute = device == "gpu"
+    if fp32:
+        for option in ("use_fp16_packed", "use_fp16_storage", "use_fp16_arithmetic", "use_bf16_storage"):
+            if hasattr(net.opt, option):
+                setattr(net.opt, option, False)
     if device == "gpu":
-        net.set_vulkan_device(0)
+        net.set_vulkan_device(0)  # device 1 is llvmpipe, Mesa's software renderer
     started = time.perf_counter()
     net.load_param(os.path.join(model_dir, "model.ncnn.param"))
     net.load_model(os.path.join(model_dir, "model.ncnn.bin"))
@@ -83,24 +91,28 @@ def infer(net, ids: np.ndarray):
     return out
 
 
-def run_one(models_dir: str, name: str, device: str, threads: int, budget_s: float, warmup: int) -> dict:
+def run_one(models_dir: str, name: str, device: str, threads: int, budget_s: float, warmup: int,
+            fp32: bool = False, check_sentences: int = 20) -> dict:
     import ncnn
 
     model_dir = os.path.join(models_dir, name)
     work = Workload(model_dir)
     cpu_zones, gpu_zones = find_zones(), find_zones(names=("gpu-thermal",))
     temp_start = cpu_temp(cpu_zones)
-    net, load_s = make_net(model_dir, device, threads)
+    net, load_s = make_net(model_dir, device, threads, fp32)
     for ids in work.sentences[:warmup]:  # GPU: also compiles the shaders
         infer(net, ids)
 
-    check = {}
-    if device == "gpu":  # compare GPU scores with the CPU's on the first 20 sentences
-        reference, _ = make_net(model_dir, "cpu", 4)
-        diffs = [float(np.max(np.abs(np.array(infer(net, ids)) - np.array(infer(reference, ids)))))
-                 for ids in work.sentences[:20]]
-        check = {"gpu_vs_cpu_max_abs_diff": max(diffs), "gpu_output_nan": bool(np.isnan(diffs).any())}
-        del reference
+    # Accuracy: compare with ncnn on the CPU in full FP32, on the first few sentences.
+    reference, _ = make_net(model_dir, "cpu", 4, fp32=True)
+    gaps, scale = [], []
+    for ids in work.sentences[:check_sentences]:
+        expected = np.array(infer(reference, ids))
+        gaps.append(float(np.max(np.abs(np.array(infer(net, ids)) - expected))))
+        scale.append(float(np.max(np.abs(expected))))
+    check = {"max_abs_diff_vs_fp32_cpu": max(gaps), "reference_max_abs": max(scale),
+             "output_nan": bool(np.isnan(gaps).any())}
+    del reference
 
     sampler = GpuSampler(cpu_zones, gpu_zones)
     sampler.start()
@@ -128,7 +140,7 @@ def run_one(models_dir: str, name: str, device: str, threads: int, budget_s: flo
     thermal = sampler.finish()
 
     return {
-        "model": name, "device": device, "threads": threads, "params_m": work.manifest["params"] / 1e6,
+        "model": name, "device": device, "fp32": fp32, "threads": threads, "params_m": work.manifest["params"] / 1e6,
         "model_mb": work.manifest.get("ncnn_mb"), "load_s": load_s,
         "peak_rss_mb": memory_mb()["peak_rss_mb"],
         "sentence": summarize(sentence_s),
@@ -146,10 +158,11 @@ def main(argv=None):
     parser.add_argument("--models-dir", default="ncnn")
     parser.add_argument("--results", default="results")
     parser.add_argument("--models", nargs="+", help="default: every model in ncnn/index.json")
-    parser.add_argument("--devices", nargs="+", default=["gpu", "cpu1", "cpu4"],
-                        help="gpu, or cpuN for the CPU with N threads")
+    parser.add_argument("--devices", nargs="+", default=["gpu", "gpu32", "cpu4"],
+                        help="gpu (ncnn's default FP16), gpu32 (FP16 off), or cpuN for the CPU with N threads")
     parser.add_argument("--budget", type=float, default=90.0)
     parser.add_argument("--warmup", type=int, default=10)
+    parser.add_argument("--check-sentences", type=int, default=20, help="sentences compared with FP32 CPU output")
     parser.add_argument("--cool-to", type=float, default=50.0)
     parser.add_argument("--max-cooldown", type=float, default=180.0)
     parser.add_argument("--config-timeout", type=float, default=900.0)
@@ -158,8 +171,11 @@ def main(argv=None):
 
     if args.one:
         name, device = args.one.split(":")
-        threads = 1 if device == "gpu" else int(device[3:])
-        result = run_one(args.models_dir, name, "gpu" if device == "gpu" else "cpu", threads, args.budget, args.warmup)
+        on_gpu = device.startswith("gpu")
+        threads = 1 if on_gpu else int(device[3:])
+        result = run_one(args.models_dir, name, "gpu" if on_gpu else "cpu", threads, args.budget, args.warmup,
+                         fp32=device == "gpu32", check_sentences=args.check_sentences)
+        result["device"] = device
         print("RESULT " + json.dumps(result), flush=True)
         return
 
@@ -176,7 +192,7 @@ def main(argv=None):
 
     gpus = ncnn.get_gpu_count()
     log(f"ncnn {getattr(ncnn, '__version__', '?')}, Vulkan GPUs found: {gpus}")
-    devices = [d for d in args.devices if d != "gpu" or gpus > 0]
+    devices = [d for d in args.devices if not d.startswith("gpu") or gpus > 0]
     if args.models:
         models = args.models
     else:
@@ -188,7 +204,8 @@ def main(argv=None):
     for i, (name, device) in enumerate(configs, 1):
         waited = wait_to_cool(zones, args.cool_to, args.max_cooldown)
         cmd = [sys.executable, os.path.abspath(__file__), "--one", f"{name}:{device}", "--models-dir", args.models_dir,
-               "--budget", str(args.budget), "--warmup", str(args.warmup)]
+               "--budget", str(args.budget), "--warmup", str(args.warmup),
+               "--check-sentences", str(args.check_sentences)]
         started = time.time()
         try:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=args.config_timeout)
@@ -203,10 +220,10 @@ def main(argv=None):
         if "error" in result:
             log(f"[{i}/{len(configs)}] {name} {device}: ERROR {result['error'][-300:]}")
         else:
-            check = (f", GPU vs CPU {result['gpu_vs_cpu_max_abs_diff']:.1e}" if "gpu_vs_cpu_max_abs_diff" in result else "")
             log(f"[{i}/{len(configs)}] {name} {device}: sentence {result['sentence']['median_ms']:.1f} ms, "
                 f"article {result['article_sequential']['median_ms'] / 1000:.2f} s, "
-                f"CPU cores busy {result['cpu_cores_busy']:.2f}, GPU max {result['gpu_freq_max_mhz']} MHz{check}")
+                f"CPU cores busy {result['cpu_cores_busy']:.2f}, GPU max {result['gpu_freq_max_mhz']} MHz, "
+                f"vs FP32 CPU {result['max_abs_diff_vs_fp32_cpu']:.1e} (outputs up to {result['reference_max_abs']:.2f})")
     log("all GPU runs done")
 
 
