@@ -7,7 +7,7 @@ project:
   random_seed: 42
 
 paths:
-  raw_sentences: "data/raw/labeled_dataset.parquet"
+  raw_sentences: "data/raw/labeled_dataset.xlsx"
   annotators: "data/raw/annotators.csv"
   seed_biased_words: "data/raw/seed_biased_words.xlsx"
   bias_lexicon_file: "data/raw/bised_words_lexicon.xlsx"
