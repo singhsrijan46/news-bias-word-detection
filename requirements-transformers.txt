@@ -1,0 +1,5 @@
+# Transformer token models (scripts/train_token_models.py), on top of requirements.txt.
+# A CUDA build of PyTorch is recommended: 10-fold training takes about 30 minutes on a 4 GB laptop GPU.
+torch>=2.1
+transformers>=4.40
+tabulate>=0.9
