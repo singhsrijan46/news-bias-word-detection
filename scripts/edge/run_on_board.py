@@ -119,14 +119,16 @@ def gpu_setup(board: Board, ncnn_dir: str, models=None) -> None:
         board.run("push", os.path.join(ncnn_dir, name), f"{REMOTE}/ncnn/{name}")
     if board.shell(f"test -d {REMOTE}/gpulib/ncnn", check=False).returncode != 0:
         board.shell(f"docker run --rm --network host -v {REMOTE}:/work --entrypoint python3 {IMAGE} "
-                    f"-m pip install --quiet --no-cache-dir --progress-bar off --target /work/gpulib ncnn numpy")
+                    f"-m pip install --quiet --no-cache-dir --progress-bar off --only-binary=:all: "
+                    f"--target /work/gpulib ncnn numpy")
     board.shell(f"cd {REMOTE} && PYTHONPATH={REMOTE}/gpulib python3 -c "
                 f"\"import ncnn; print('ncnn', ncnn.__version__, '- Vulkan GPUs:', ncnn.get_gpu_count())\"")
 
 
 def gpu_start(board: Board, extra) -> None:
     args = " ".join(shlex.quote(a) for a in extra)
-    board.shell(f"cd {REMOTE} && setsid sh -c 'PYTHONPATH={REMOTE}/gpulib python3 gpu_benchmark.py {args} "
+    # Only setsid goes in the background, with every stream redirected, so adb returns at once.
+    board.shell(f"setsid sh -c 'cd {REMOTE} && PYTHONPATH={REMOTE}/gpulib python3 gpu_benchmark.py {args} "
                 f">> results/gpu_stdout.log 2>&1' < /dev/null > /dev/null 2>&1 &")
     print("Started. Check progress with: python scripts/edge/run_on_board.py status")
 
