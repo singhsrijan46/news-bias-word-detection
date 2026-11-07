@@ -65,6 +65,20 @@ class MBICDataLoader:
 
         raise FileNotFoundError(f"Sentence dataset not found at {abs_path} or {alt_path}")
 
+    def load_annotations(self) -> pd.DataFrame:
+        """
+        Load the raw crowd annotations: one row per annotator per sentence (17,775 rows).
+        Holds each annotator's sentence label, free-text word highlights (`words`)
+        and background (including `political_ideology`, -10 liberal to +10 conservative).
+        """
+        rel_path = self.paths.get("annotations", "data/raw/annotations.xlsx")
+        abs_path = self._resolve_path(rel_path)
+        logger.info(f"Loading raw per-annotator annotations from: {abs_path}")
+
+        if not os.path.exists(abs_path):
+            raise FileNotFoundError(f"Annotations file not found at {abs_path}")
+        return pd.read_excel(abs_path)
+
     def load_annotators(self) -> pd.DataFrame:
         """
         Load annotator background characteristics (784 participants).
