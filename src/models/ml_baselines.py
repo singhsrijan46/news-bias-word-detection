@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -20,9 +20,6 @@ def extract_numeric_features(df: pd.DataFrame) -> Tuple[np.ndarray, List[str]]:
     cols = [c for c in df.columns if c not in NON_FEATURE_COLS and pd.api.types.is_numeric_dtype(df[c])]
     X = df[cols].fillna(0).values
     return X, cols
-
-
-from typing import Tuple
 
 
 class MLBaseModel(BaseEstimator, ClassifierMixin):
