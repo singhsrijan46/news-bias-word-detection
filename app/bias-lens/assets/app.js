@@ -1,6 +1,11 @@
-// Bias Lens web page: sends text to the board's API and shows which words readers would flag.
+// Bias Lens web page: pairs with the board, sends text encrypted, and shows which words readers would flag.
+
+import { startPairing, finishPairing, secureCall } from "./biaslens-client.js";
 
 const $ = (id) => document.getElementById(id);
+const STORE = "biaslens-pairing";
+let pairing = null;
+let pairingSid = null;
 
 // An invented example, written for this app.
 const SAMPLE = `City council backs bus expansion
@@ -14,6 +19,84 @@ function readers(share) {
   return n < 1 ? "Fewer than 1 in 10" : `About ${n} in 10`;
 }
 
+function deviceName() {
+  const ua = navigator.userAgent;
+  const browser = /Edg\//.test(ua) ? "Edge" : /Firefox\//.test(ua) ? "Firefox" : /Chrome\//.test(ua) ? "Chrome" : "Browser";
+  const system = /Android/.test(ua) ? "Android" : /iPhone|iPad/.test(ua) ? "iOS" : /Windows/.test(ua) ? "Windows"
+    : /Mac OS/.test(ua) ? "macOS" : "Linux";
+  return `${browser} on ${system}`;
+}
+
+// ---------------------------------------------------------------- pairing
+
+function loadPairing() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE));
+    return saved && saved.baseUrl === window.location.origin ? saved : null;
+  } catch {
+    return null;
+  }
+}
+
+function showPairingState() {
+  const isPaired = Boolean(pairing);
+  $("pairing").hidden = isPaired;
+  $("analyze").disabled = !isPaired;
+  $("sample").disabled = !isPaired;
+  const line = $("paired-as");
+  line.replaceChildren();
+  if (isPaired) {
+    line.append(`Paired as "${pairing.name}"; requests are encrypted. `);
+    const forget = document.createElement("a");
+    forget.href = "#";
+    forget.textContent = "Forget this browser";
+    forget.addEventListener("click", async (event) => {
+      event.preventDefault();
+      try { await secureCall(pairing, { op: "forget" }); } catch { /* forget locally anyway */ }
+      localStorage.removeItem(STORE);
+      pairing = null;
+      showPairingState();
+    });
+    line.append(forget);
+  }
+}
+
+async function beginPairing() {
+  $("pair-status").textContent = "";
+  try {
+    const session = await startPairing(window.location.origin, deviceName());
+    pairingSid = session.sid;
+    $("pair-code").disabled = false;
+    $("pair-finish").disabled = false;
+    $("pair-code").value = "";
+    $("pair-code").focus();
+    $("pair-status").textContent = "Watch the board's LED matrix for six digits.";
+  } catch (error) {
+    $("pair-status").textContent = `Could not start pairing: ${error.message}`;
+  }
+}
+
+async function completePairing() {
+  const code = $("pair-code").value.trim();
+  if (!/^\d{6}$/.test(code)) {
+    $("pair-status").textContent = "Type the six digits from the board.";
+    return;
+  }
+  $("pair-finish").disabled = true;
+  $("pair-status").textContent = "Pairing…";
+  try {
+    pairing = await finishPairing(window.location.origin, pairingSid, code, deviceName());
+    localStorage.setItem(STORE, JSON.stringify(pairing));
+    $("pair-status").textContent = "";
+    showPairingState();
+  } catch (error) {
+    $("pair-status").textContent = error.message;
+    $("pair-code").disabled = true;
+  }
+}
+
+// ---------------------------------------------------------------- analysis
+
 function setStatus(message) {
   $("status").textContent = message;
 }
@@ -24,24 +107,26 @@ async function analyze() {
     setStatus("Paste some text first.");
     return;
   }
+  if (!pairing) {
+    setStatus("Pair this browser first.");
+    return;
+  }
   setStatus("Analysing on the board…");
   $("analyze").disabled = true;
   try {
-    const response = await fetch("/api/analyze", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text }),
-    });
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      throw new Error(body.detail || response.statusText);
-    }
-    render(await response.json());
+    render(await secureCall(pairing, { op: "analyze", text }));
     setStatus("");
   } catch (error) {
-    setStatus(`Could not analyse the text: ${error.message}`);
+    if (/Unknown device|failed authentication/.test(error.message)) {
+      localStorage.removeItem(STORE);
+      pairing = null;
+      showPairingState();
+      setStatus("The board no longer knows this browser. Pair it again.");
+    } else {
+      setStatus(`Could not analyse the text: ${error.message}`);
+    }
   } finally {
-    $("analyze").disabled = false;
+    $("analyze").disabled = !pairing;
   }
 }
 
@@ -122,11 +207,16 @@ function setUpSharing() {
   const code = "(()=>{const t=(getSelection().toString()||document.body.innerText).slice(0,20000);" +
     `window.open('${origin}/#text='+encodeURIComponent(t),'_blank')})()`;
   $("bookmarklet").href = `javascript:${code}`;
-  $("curl").textContent = `curl -X POST ${origin}/api/analyze \\\n  -H "Content-Type: application/json" \\\n` +
-    `  -d '{"text": "Critics slammed the reckless plan."}'`;
+  $("curl").textContent = "Programs pair once (POST /api/pair/start, /api/pair/exchange, /api/pair/confirm), " +
+    "then send AES-256-GCM encrypted requests to POST /api/secure. See docs/BIAS_LENS_APP.md.";
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  pairing = loadPairing();
+  showPairingState();
+  $("pair-start").addEventListener("click", beginPairing);
+  $("pair-finish").addEventListener("click", completePairing);
+  $("pair-code").addEventListener("keydown", (event) => { if (event.key === "Enter") completePairing(); });
   $("analyze").addEventListener("click", analyze);
   $("sample").addEventListener("click", () => {
     $("text").value = SAMPLE;
@@ -144,6 +234,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (window.location.hash.startsWith("#text=")) {
     $("text").value = decodeURIComponent(window.location.hash.slice(6));
     history.replaceState(null, "", window.location.pathname);
-    analyze();
+    if (pairing) analyze();
   }
 });

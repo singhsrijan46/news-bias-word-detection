@@ -33,7 +33,8 @@ APP = "bias-lens"
 REMOTE_APPS = "/home/arduino/ArduinoApps"
 REMOTE_CACHE = "/home/arduino/.cache/bias-lens"
 IMAGE = "ghcr.io/arduino/app-bricks/python-apps-base:0.5.0"
-PACKAGES = ["onnxruntime==1.28.0", "tokenizers==0.23.3"]  # numpy comes with App Lab's image
+PACKAGES = ["onnxruntime==1.28.0", "tokenizers==0.23.3", "rbcl==1.1.2", "barriers==1.2.0"]
+VENDOR_CHECK = ["onnxruntime", "tokenizers", "rbcl", "barriers"]  # numpy and cryptography come with App Lab's image
 MODEL_FILES = ["model_int8.onnx", "tokenizer.json", "model_info.json"]
 LEXICONS = ["data/raw/bised_words_lexicon.xlsx", "data/raw/seed_biased_words.xlsx"]
 PORT = 7000
@@ -90,6 +91,8 @@ def build(model_dir: str) -> str:
     shutil.rmtree(stage, ignore_errors=True)
     shutil.copytree(os.path.join(ROOT, "app", APP), stage)
     shutil.copy(os.path.join(ROOT, "src", "models", "onnx_token_model.py"), os.path.join(stage, "python"))
+    for name in ("biaslens-client.js", "noble-bundle.js"):  # the page pairs and encrypts like the extension
+        shutil.copy(os.path.join(ROOT, "clients", "shared", name), os.path.join(stage, "assets"))
     model_out = os.path.join(stage, "python", "model")
     os.makedirs(model_out)
     for name in MODEL_FILES:
@@ -105,14 +108,17 @@ def build(model_dir: str) -> str:
 def install(board: Board, model_dir: str) -> None:
     stage = build(model_dir)
     target = f"{REMOTE_APPS}/{APP}"
-    board.shell(f"mkdir -p {REMOTE_APPS} {REMOTE_CACHE} && rm -rf {target}")
+    # Paired devices and settings live in data/, which survives reinstalling.
+    board.shell(f"mkdir -p {REMOTE_APPS} {REMOTE_CACHE} && rm -rf {REMOTE_CACHE}/data && "
+                f"if [ -d {target}/data ]; then mv {target}/data {REMOTE_CACHE}/data; fi && rm -rf {target}")
     board.run("push", stage, target)
-    if board.shell(f"test -d {REMOTE_CACHE}/vendor/onnxruntime && test -d {REMOTE_CACHE}/vendor/tokenizers",
-                   check=False).returncode != 0:
-        board.shell(f"docker run --rm --network host -v {REMOTE_CACHE}:/cache --entrypoint python3 {IMAGE} "
-                    f"-m pip install --quiet --no-cache-dir --progress-bar off --only-binary=:all: --no-deps "
-                    f"--target /cache/vendor {' '.join(PACKAGES)}")
-    board.shell(f"cp -r {REMOTE_CACHE}/vendor {target}/python/vendor")
+    check = " && ".join(f"test -d {REMOTE_CACHE}/vendor/{name}" for name in VENDOR_CHECK)
+    if board.shell(check, check=False).returncode != 0:
+        board.shell(f"rm -rf {REMOTE_CACHE}/vendor && docker run --rm --network host -v {REMOTE_CACHE}:/cache "
+                    f"--entrypoint python3 {IMAGE} -m pip install --quiet --no-cache-dir --progress-bar off "
+                    f"--only-binary=:all: --no-deps --target /cache/vendor {' '.join(PACKAGES)}")
+    board.shell(f"cp -r {REMOTE_CACHE}/vendor {target}/python/vendor && "
+                f"if [ -d {REMOTE_CACHE}/data ]; then mv {REMOTE_CACHE}/data {target}/data; fi")
     print(f"Installed to {target}")
 
 
