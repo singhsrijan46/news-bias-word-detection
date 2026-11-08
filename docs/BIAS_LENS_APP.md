@@ -90,7 +90,7 @@ Notes from setting this up on our board:
 
 ## Trustworthy AI, by design
 
-- **Privacy:** text is analysed on the board and kept only for the request. There are no accounts, no cloud and no logs of text; the app prints only word counts.
+- **Privacy:** text is analysed on the board and kept only for the request. There are no accounts, no cloud and no logs of text; the app prints only word counts. A network log of the board, taken while it analysed articles, shows the app's container talking to nothing but its own clients (`docs/NETWORK_LOG.md`).
 - **Honest uncertainty:** the page shows how many readers would agree, not a bare "biased", and marks contested words as contested.
 - **Transparency:** the page explains where the scores come from and their limits, and shows the model and its cross-validated quality.
 - **Whose readers:** the page says the annotators lean liberal, and on request shows liberal and conservative readers apart, with the caveat the audit calls for.
