@@ -67,6 +67,27 @@ For reference, the paper reports F1 0.43 and ROC AUC 0.79 for its XGBoost.
 
 **Labels.** The paper's `label4` agrees with our rebuilt "at least 4 votes" label on 98.3% of words (Cohen's κ = 0.906), so the rebuilt targets are a faithful basis for training. The 527 paper words (1.7%) that did not line up with our tokens are left out of the scores.
 
+## Abstaining on uncertain words
+
+A model that knows when it is unsure can hold back on those words, and be right more often on the rest. This is RQ1's last measure. `scripts/coverage_curves.py` makes each model abstain on the words whose scores are closest to its decision threshold, in each fold. It then scores the model on the words it keeps, against the paper's labels. The students' predictions come from `train_student.py` (`docs/STUDENT_MODEL.md`).
+
+| Model | F1, every word | 95% kept | 90% kept | 80% kept | 70% kept | 50% kept |
+| --- | --- | --- | --- | --- | --- | --- |
+| M0 XGBoost | 0.451 | 0.473 | 0.496 | 0.489 | 0.319 | 0.000 |
+| M1, hard labels | 0.608 | 0.652 | 0.661 | 0.665 | 0.678 | 0.711 |
+| M2, vote shares | 0.617 | 0.663 | **0.703** | **0.765** | 0.803 | 0.839 |
+| Student | 0.605 | 0.650 | 0.686 | 0.762 | 0.816 | 0.856 |
+| Student, INT8 | 0.601 | 0.640 | 0.684 | 0.759 | 0.797 | 0.852 |
+
+1. **M2 gains far more from abstaining than M1.**
+   - **With 10% set aside:** M2's F1 rises by 0.09 and M1's by 0.05. Fold by fold, M2 is ahead in 8 of 10 folds (Wilcoxon p = 0.01), and its gain from abstaining is larger (paired t-test p = 0.02).
+   - **With 20% set aside:** M2 is ahead in all 10 folds (p = 0.002). M1 hardly improves past 90%: its errors are not where its scores are closest to the threshold.
+2. **M2's uncertainty is the readers' disagreement.** Call a word contested when 2 to 5 of 10 annotators highlighted it. Contested words are 17% of all words, but 55% of the 10% M2 sets aside, against 39% for M1. Training on vote shares makes "unsure" mean "readers disagree".
+3. **The students abstain as well as M2.** This includes the INT8 model on the board.
+4. **Abstaining has a cost.** At 90% coverage M2 sets aside 28% of the biased words, mostly contested ones. So Bias Lens does not hide these words. It marks the ones above the threshold "readers split", which gives no verdict on them. On BABE, experts marked 32% of those words, against 79% of the "most readers" flags (`docs/BABE_TEST.md`).
+
+M0 collapses past 80% because most of its biased words score near its threshold.
+
 ## Limits and next steps
 
 - **One run, untuned.** This is one seed and one set of hyperparameters (4 epochs, learning rate 3e-5), fixed before seeing the test folds. More seeds would settle whether M2's small F1 gain is real.
