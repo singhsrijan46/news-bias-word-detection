@@ -1,0 +1,6 @@
+name: Bias Lens
+icon: 🔎
+description: Marks the words in a news article that readers would call biased, and how many readers would agree. Everything runs on the board.
+
+bricks:
+  - arduino:web_ui
