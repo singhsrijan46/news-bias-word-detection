@@ -70,5 +70,5 @@ For reference, the paper reports F1 0.43 and ROC AUC 0.79 for its XGBoost.
 ## Limits and next steps
 
 - **One run, untuned.** This is one seed and one set of hyperparameters (4 epochs, learning rate 3e-5), fixed before seeing the test folds. More seeds would settle whether M2's small F1 gain is real.
-- **Random folds.** The folds are random over sentences. A topic-held-out split, and BABE as an expert-labelled external test set, will test how well the models transfer. Both are in the proposal's plan.
+- **Random folds.** The folds are random over sentences. On BABE, an expert-labelled external test set, the models rank words as well as here, including on topics MBIC lacks (`docs/BABE_TEST.md`). A topic-held-out split is the other test in the proposal's plan.
 - **Next models.** M3 adds annotator ideology. After that comes the small student distilled for the UNO Q. The on-device benchmark shows that a MiniLM-sized INT8 model handles an article in about 1.3 seconds on the board.
