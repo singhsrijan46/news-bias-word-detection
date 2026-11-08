@@ -51,9 +51,12 @@ def main(argv=None):
     parser.add_argument("--model-name", default="FacebookAI/roberta-base")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--quick", action="store_true")
+    parser.add_argument("--final", action="store_true",
+                        help="train on all sentences and export to ONNX for the board's on-request view")
     parser.add_argument("--m2-tokens", default=os.path.join(ROOT, "outputs", "models", "cv", "tokens_oof.csv"),
                         help="M2's out-of-fold token predictions from train_token_models.py (same folds)")
     parser.add_argument("--out", default=os.path.join(ROOT, "outputs", "models", "perspective_cv"))
+    parser.add_argument("--out-final", default=os.path.join(ROOT, "outputs", "models", "perspective_final"))
     args = parser.parse_args(argv)
     if args.quick:
         args.max_folds, args.epochs = 2, 1
@@ -64,6 +67,22 @@ def main(argv=None):
     targets = build_sentence_targets(annotations)
     groups = build_group_targets(annotations)
     logger.info(f"groups: {summarize_groups(groups)}")
+    if args.final:
+        from src.models.onnx_token_model import export
+
+        model = GroupTokenModel(TrainConfig(model_name=args.model_name, epochs=args.epochs, seed=args.seed))
+        model.fit(targets, groups)
+        info = {"role": "perspective model (M3)", "heads": ["all", "liberal", "conservative"],
+                "training_sentences": len(targets), "grouping": "liberal below -3, conservative above 3"}
+        cv_path = os.path.join(args.out, "metrics.json")
+        if os.path.exists(cv_path):  # carry the cross-validated evidence to the board, for its caveat
+            with open(cv_path, encoding="utf-8") as f:
+                cv = json.load(f)
+            info.update({"cv_gap_spearman_flagged": cv["gap"]["spearman_gap_flagged_tokens"],
+                         "cv_paired_log_loss": cv["paired_log_loss"]})
+        export(model, args.out_final, info)
+        logger.info(f"M3 exported to {os.path.normpath(args.out_final)}")
+        return
     dt = loader.load_token_dataset(drop_missing_tfidf=False).reset_index(drop=True)
     paper = align_paper_words(targets, dt).set_index("dt_index").loc[dt.index].reset_index()
     found = ((paper.sentence_id >= 0) & (paper.word_index >= 0)).values
