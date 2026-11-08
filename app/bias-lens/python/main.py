@@ -4,7 +4,7 @@ Bias Lens on the Arduino UNO Q.
 Serves a web page and an API on port 7000 to devices on the home network. Devices pair
 once (a 6-digit code on the LED matrix), then send encrypted requests:
     POST /api/pair/start, /api/pair/exchange, /api/pair/confirm   pairing (see security.py)
-    POST /api/secure     encrypted {op: "analyze" | "perspective" | "info" | "devices" | "forget"}
+    POST /api/secure     encrypted {op: "analyze" | "perspective" | "explain" | "info" | "devices" | "forget"}
     GET  /api/info       the model and its settings (nothing private)
     POST /api/analyze    plain-text analysis, refused unless data/settings.json allows unpaired use
 The model runs on the board's CPU and the LED matrix shows what is happening. No text is
@@ -25,12 +25,14 @@ from arduino.app_bricks.web_ui import WebUI  # noqa: E402
 from arduino.app_utils import App, Bridge  # noqa: E402
 from fastapi import Body, HTTPException  # noqa: E402
 
-from analyzer import Analyzer, Perspective  # noqa: E402
+from analyzer import CPU, MAX_CHARS, Analyzer, Perspective, band, sentence_spans  # noqa: E402
+from explainer import Explainer  # noqa: E402
 from security import Pairing, SecurityError  # noqa: E402
 
 DATA = os.path.join(os.path.dirname(HERE), "data")  # kept across redeploys
 analyzer = Analyzer.from_dir(os.path.join(HERE, "model"))
 perspective = Perspective(os.path.join(HERE, "perspective"), analyzer.threshold)  # M3, loaded on first use
+explainer = Explainer(os.path.join(HERE, "llm"))  # the small language model, loaded on first use
 ui = WebUI()
 
 
@@ -102,6 +104,39 @@ def run_perspective(text: str) -> dict:
     return result
 
 
+def run_explain(text, start, end) -> dict:
+    """Explain the word at text[start:end], within its sentence."""
+    text = str(text)[:MAX_CHARS]
+    if not isinstance(start, int) or not isinstance(end, int) or not 0 <= start < end <= len(text):
+        raise HTTPException(status_code=400, detail="Give the word's start and end in the text.")
+    if not explainer.available:
+        raise HTTPException(status_code=404, detail="The explanation model is not installed on this board.")
+    sentence = next(((s0, s1) for s0, s1 in sentence_spans(text) if s0 <= start and end <= s1), None)
+    if sentence is None:
+        raise HTTPException(status_code=400, detail="The word is not inside a sentence of the text.")
+    s0, s1 = sentence
+    to_matrix("show_busy")
+    try:
+        with CPU:  # one model at a time on the CPU
+            spans, shares = analyzer.model.score(text[s0:s1])
+            share = next((float(v) for (a, b), v in zip(spans, shares) if (a, b) == (start - s0, end - s0)), None)
+            if share is None:
+                raise HTTPException(status_code=400, detail="That is not one of the sentence's words.")
+            result = explainer.explain(text[s0:s1], start - s0, end - s0, share, band(share, analyzer.threshold),
+                                       text[start:end].lower() in analyzer.lexicon, analyzer.model.score,
+                                       analyzer.threshold, analyzer.lexicon)
+    except HTTPException:
+        to_matrix("show_idle")
+        raise
+    except Exception:
+        to_matrix("show_error")
+        raise
+    to_matrix("show_idle")
+    print(f"Explained a word in {result['seconds']:.1f} s; suggestion "
+          f"{'kept' if result['alternative'] else 'dropped'}")  # never the text
+    return {**result, "model": explainer.describe()}
+
+
 def guarded(action):
     try:
         return action()
@@ -132,8 +167,10 @@ def secure(payload: dict = Body(...)):
         result = run_analysis(request.get("text", ""))
     elif op == "perspective":
         result = run_perspective(request.get("text", ""))
+    elif op == "explain":
+        result = run_explain(request.get("text", ""), request.get("start"), request.get("end"))
     elif op == "info":
-        result = {**analyzer.describe(), "perspective": perspective.available}
+        result = {**analyzer.describe(), "perspective": perspective.available, "explainer": explainer.available}
     elif op == "devices":
         result = {"devices": pairing.list_devices(), "you": device}
     elif op == "forget":
@@ -151,6 +188,7 @@ def analyze_plain(payload: dict = Body(...)):
 
 def info():
     return {**analyzer.describe(), "paired_devices": len(pairing.devices), "perspective": perspective.available,
+            "explainer": explainer.available, "explainer_model": explainer.describe(),
             "allow_unpaired": bool(settings().get("allow_unpaired"))}
 
 

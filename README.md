@@ -15,6 +15,7 @@ The paper's detector turns about ten crowd judgements per sentence into one yes/
 1. **Send an article.** A phone or laptop on the home network sends an article to the board. It can use the board's web page, the Chrome or Edge extension, or a bookmark in Chrome on a phone. Each device pairs once with a code shown on the board's LED matrix. After that, every request is encrypted.
 2. **The board scores every word.** A small distilled model runs on its CPU and marks each word with "about N in 10 readers would flag this". Flags are shown in two bands, "readers split" and "most readers would flag it". The LED matrix shows a heat strip of the article.
 3. **On request, the two political sides.** A second model estimates how liberal and how conservative readers would react to each word, with the audit's caveat.
+4. **On request, why.** For a selected word, a small language model on the board writes one sentence on why readers might find it one-sided. It is labelled experimental, with its measured record.
 
 See `docs/BIAS_LENS_APP.md` and `docs/BIAS_LENS_CLIENTS.md`.
 
@@ -45,6 +46,7 @@ Read in this order:
 | `docs/BABE_TEST.md` | The external test against expert labels |
 | `docs/BIAS_LENS_APP.md` | The board's app: page, API, LED matrix and deployment |
 | `docs/BIAS_LENS_CLIENTS.md` | The extension, the phone bookmark, and pairing and encryption |
+| `docs/EXPLANATIONS.md` | The on-board language model that explains one word: how it is kept honest, and how good it is |
 | `docs/NETWORK_LOG.md` | The evidence that no text leaves the board |
 | `docs/MODEL_CARD.md` | The board's model: intended use, results and caveats |
 | `docs/DATASHEET.md` | The released label set: MBIC's votes by annotator ideology |

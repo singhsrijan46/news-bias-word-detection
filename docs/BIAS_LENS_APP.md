@@ -11,6 +11,7 @@ Bias Lens is the project's device. Any phone or laptop on the home network can s
 | Analyzer (`python/analyzer.py`) | Board, Linux side | Splits the text into sentences, scores every word, assigns bands, builds the summary and the heat strip |
 | Model (`python/onnx_token_model.py`, `python/model/`) | Board, Linux side, on the CPU | The distilled MiniLM-L6 student in INT8, run with ONNX Runtime |
 | Perspective model (`python/perspective/`) | Board, Linux side, on the CPU, on request | M3 in INT8: how MBIC's liberal and conservative annotators would each react to a word. It is loaded on first use. |
+| Explainer (`python/explainer.py`, `python/llm/`) | Board, Linux side, on the CPU, on request | A small language model, Qwen2.5-0.5B-Instruct in 4-bit, that writes one sentence on why readers might find a word one-sided. It is loaded on first use. |
 | Sketch (`sketch/sketch.ino`) | Board, STM32 microcontroller | Draws the heat strip, a scanning line while busy, and an idle icon on the 8 × 13 LED matrix |
 
 The Linux side tells the sketch what to show over App Lab's Bridge, using `show_busy`, `show_levels` and `show_idle`.
@@ -42,6 +43,12 @@ A word's **share** is the model's estimate of the fraction of readers who would 
 - **Caveat:** M3 fits conservative annotators better than the main model's pooled share. But its gap between the groups follows the observed gap only weakly (Spearman's rho 0.13), so the page says that a single word's difference is uncertain.
 - **Speed:** M3 is RoBERTa-base in INT8. On the board it took 6.9 seconds for an 820-word article, or 10 seconds on the first request, which also loads it. The main analysis of the same text took 1.3 seconds.
 
+**Explaining one word, on request.** Selecting a marked word shows how many readers would flag it, and offers **Ask the board's AI why**. A small language model on the board then writes one sentence on why readers might find the word one-sided.
+- **Experimental:** the page labels it so, and says how often such reasons held up in testing.
+- **Speed:** about 15 seconds, or 33 seconds the first time, which includes loading the model.
+
+`docs/EXPLANATIONS.md` describes how it is kept honest and how good it is.
+
 **Whose readers.** The page's "How to read this" says that MBIC's annotators lean liberal (44% liberal, 27% conservative). It also says that a neutral article still shows some flags, mostly "readers split": in the BABE test, experts marked about a third of those words (`docs/BABE_TEST.md`).
 
 ## API
@@ -58,10 +65,11 @@ The response gives:
 - `sentences`: each sentence's character span and its words. Each word comes with its span, `share`, `band` and `lexicon`; words with a share below 0.05 are left out.
 - `summary`: counts, the 13-column `strip`, the most-flagged words, and the time taken.
 
-`GET /api/info` describes the model, the threshold and the cross-validated scores, and says whether the perspective model is installed (`perspective`).
+`GET /api/info` describes the model, the threshold and the cross-validated scores, and says whether the perspective model (`perspective`) and the explainer (`explainer`) are installed.
 
 Paired devices send these requests encrypted to `POST /api/secure` (`docs/BIAS_LENS_CLIENTS.md`):
 - **`op: "analyze"`:** the analysis above.
+- **`op: "explain"`** with the analysed `text` and a word's `start` and `end`: the word's share, band and lexicon entry, as measured by the board, and the language model's `reason`, or `null` if it did not pass the checks.
 - **`op: "perspective"`:** M3's view of the same text, for each word either group might flag:
   - `words`: each word's span, `liberal` and `conservative` shares.
   - `liberal_more` and `conservative_more`: up to six words each, where one group's share is at least 0.1 higher.
@@ -76,6 +84,7 @@ On the PC, with the board connected over USB-C:
 ```bash
 python scripts/train_student.py --final           # trains and exports the student (outputs/student/final)
 python scripts/train_perspective_model.py --final # trains and exports M3 (outputs/models/perspective_final)
+python scripts/app/fetch_llm.py                   # downloads the explainer's language model (outputs/llm, 793 MB)
 python scripts/app/deploy_app.py install          # builds the app folder and copies it to /home/arduino/ArduinoApps
 python scripts/app/deploy_app.py start            # starts it with App Lab's CLI; also compiles and flashes the sketch
 python scripts/app/deploy_app.py forward          # optional: http://localhost:7000 on this PC
@@ -87,6 +96,7 @@ Notes from setting this up on our board:
 - **Libraries.** App Lab installs an app's `requirements.txt` through Docker's default network, where large downloads stalled on our Wi-Fi. So `deploy_app.py` installs `onnxruntime` and `tokenizers` once, over the board's own network, into `/home/arduino/.cache/bias-lens/vendor`, and copies them into the app. numpy comes with App Lab's image.
 - **Temp folder.** `adb` sessions on the board set `TMPDIR` to Android's `/data/local/tmp`, which does not exist there, and App Lab's CLI then fails with "stat /data/local/tmp". `deploy_app.py` runs the CLI with `TMPDIR=/tmp`.
 - **The perspective model.** `install` copies M3 into the app when `outputs/models/perspective_final` exists. It adds 125 MB to the app. With both models loaded, the app's container used 319 MB of the board's 3.6 GB. `--no-perspective` leaves it out, and the page then hides the button.
+- **The explainer's language model.** `install` copies it to `/home/arduino/.cache/bias-lens/llm` once, and links it into the app at each install. With it loaded, the container used 1.66 GB. It unloads after five idle minutes. `--no-llm` leaves it out.
 
 ## Trustworthy AI, by design
 
@@ -101,4 +111,5 @@ Notes from setting this up on our board:
 - **Narrow training data.** The model learned from MBIC: English, US political news from 2017 to 2020, and US crowd workers. It may miss new terms, and it reflects those annotators.
 - **Words, not stance.** It scores words, not facts or framing beyond the sentence.
 - **The ideology view is uncertain.** M3 tells the two groups apart only weakly, as the page says. Whether such a view helps readers is RQ4's question, which needs a reader study.
-- **Only on this page.** The extension and the phone bookmark show the main view; the liberal and conservative estimates are on the board's own page.
+- **Only on this page.** The extension and the phone bookmark show the main view. The liberal and conservative estimates, and the explanations, are on the board's own page.
+- **Explanations are often wrong.** The board's language model is small. In testing, about a third of the reasons it showed were sensible (`docs/EXPLANATIONS.md`).

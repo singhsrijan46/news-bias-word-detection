@@ -8,6 +8,8 @@ let pairing = null;
 let pairingSid = null;
 let lastText = "";  // the text of the analysis on show, for the perspective view
 let perspectiveAvailable = false;  // whether the board has M3, the perspective model
+let explainerAvailable = false;  // whether the board has the small language model for explanations
+let selected = null;  // the marked word chosen for an explanation
 
 // An invented example, written for this app.
 const SAMPLE = `City council backs bus expansion
@@ -156,8 +158,14 @@ function render(data) {
       mark.title = `${readers(word.share)} readers would flag "${word.text}"` +
         (word.lexicon ? " (also in the paper's bias lexicon)" : "");
       mark.dataset.start = word.start;
+      mark.dataset.end = word.end;
+      mark.dataset.share = word.share;
+      mark.dataset.band = word.band;
+      mark.dataset.lexicon = word.lexicon ? "yes" : "";
       mark.dataset.title = mark.title;
       mark.tabIndex = 0;
+      mark.addEventListener("click", () => selectWord(mark));
+      mark.addEventListener("keydown", (event) => { if (event.key === "Enter") selectWord(mark); });
       article.append(mark);
       cursor = word.end;
     }
@@ -191,10 +199,62 @@ function render(data) {
     top.append(heading, list);
   }
   lastText = text;
+  selected = null;
+  $("explain").hidden = true;
   $("perspective").hidden = !perspectiveAvailable;
   $("perspective-result").hidden = true;
   $("perspective-status").textContent = "";
   $("results").hidden = false;
+}
+
+// ---------------------------------------------------------------- explaining one word
+
+function selectWord(mark) {
+  if (selected) selected.classList.remove("selected");
+  selected = mark;
+  mark.classList.add("selected");
+  const share = Number(mark.dataset.share);
+  const band = mark.dataset.band === "agreed" ? "most readers agree" : "readers split";
+  $("explain-word").textContent = `"${mark.textContent}": ${readers(share).toLowerCase()} readers would flag it ` +
+    `(${band})` + (mark.dataset.lexicon ? ". It is also in the paper's bias lexicon." : ".");
+  $("explain-result").hidden = true;
+  $("explain-status").textContent = "";
+  $("explain-run").hidden = !explainerAvailable;
+  $("explain").hidden = false;
+}
+
+function renderExplanation(data) {
+  $("explain-reason").textContent = data.reason
+    ? `AI (experimental): ${data.reason}`
+    : "The AI's answer did not pass the board's checks (it was too long, or repeated the sentence), so it is " +
+      "not shown.";
+  $("explain-alternative").hidden = !data.suggestions;
+  $("explain-alternative").textContent = data.alternative
+    ? `A more neutral word: "${data.alternative}". Checked on the board: ${readers(data.alternative_share).toLowerCase()} ` +
+      `readers would flag it, against ${readers(data.share).toLowerCase()} for "${data.word}".`
+    : `No suggested word passed the board's check (${data.alternative_rejected}).`;
+  const model = data.model || {};
+  const record = model.sensible_reasons ? ` In our test, ${model.sensible_reasons}.` : "";
+  $("explain-model").textContent = `Written by ${model.name || "a small language model"} on the board in ` +
+    `${data.seconds} s.${record} Treat it as a prompt to think, not a fact.`;
+  $("explain-result").hidden = false;
+}
+
+async function explainSelected() {
+  if (!pairing || !selected) return;
+  const mark = selected;
+  $("explain-run").disabled = true;
+  $("explain-status").textContent = "Thinking on the board… (about 15 seconds; longer the first time)";
+  try {
+    const data = await secureCall(pairing, { op: "explain", text: lastText,
+      start: Number(mark.dataset.start), end: Number(mark.dataset.end) });
+    if (mark === selected) renderExplanation(data);
+    $("explain-status").textContent = "";
+  } catch (error) {
+    $("explain-status").textContent = `Could not explain: ${error.message}`;
+  } finally {
+    $("explain-run").disabled = false;
+  }
 }
 
 // ---------------------------------------------------------------- liberal and conservative readers
@@ -244,6 +304,7 @@ async function showModel() {
   try {
     const info = await (await fetch("/api/info")).json();
     perspectiveAvailable = Boolean(info.perspective);
+    explainerAvailable = Boolean(info.explainer);
     const parts = ["Model: a small student network (MiniLM-L6), distilled from a RoBERTa-base teacher"];
     if (info.precision) parts.push(`${info.precision.toUpperCase()} on the board's CPU`);
     if (info.cv_f1) parts.push(`cross-validated F1 ${info.cv_f1.toFixed(2)} on MBIC`);
@@ -291,6 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("pair-code").addEventListener("keydown", (event) => { if (event.key === "Enter") completePairing(); });
   $("analyze").addEventListener("click", analyze);
   $("perspective-run").addEventListener("click", comparePerspectives);
+  $("explain-run").addEventListener("click", explainSelected);
   $("sample").addEventListener("click", () => {
     $("text").value = SAMPLE;
     analyze();
