@@ -14,6 +14,18 @@
   </header>
 
   <main>
+    <section id="pairing" hidden>
+      <h2>Pair this browser with the board</h2>
+      <p>Everything sent to the board is encrypted with a key only this browser and the board know. To set it up,
+        press <b>Show code</b>, then type the six digits that scroll across the board's LED matrix.</p>
+      <div class="actions">
+        <button id="pair-start" class="primary">Show code</button>
+        <input id="pair-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="6 digits" disabled>
+        <button id="pair-finish" disabled>Pair</button>
+        <span id="pair-status" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
     <section class="input">
       <label for="text">News text</label>
       <textarea id="text" rows="9" placeholder="Paste an article, or a few sentences of one"></textarea>
@@ -65,7 +77,10 @@
     </details>
   </main>
 
-  <footer id="model"></footer>
-  <script src="app.js"></script>
+  <footer>
+    <p id="model"></p>
+    <p id="paired-as"></p>
+  </footer>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
