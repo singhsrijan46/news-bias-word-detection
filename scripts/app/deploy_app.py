@@ -16,6 +16,9 @@ install puts together, from this repository:
     outputs/student/final/              the trained student (scripts/train_student.py --final)
     outputs/models/perspective_final/   M3, for the on-request liberal and conservative view
                                         (scripts/train_perspective_model.py --final; --no-perspective leaves it out)
+    outputs/llm/qwen2.5-0.5b-instruct/  the small language model that explains single words
+                                        (scripts/app/fetch_llm.py; --no-llm leaves it out). It is copied to
+                                        /home/arduino/.cache/bias-lens/llm once, and linked into the app.
     data/raw/*lexicon*, seed words      the paper's bias lexicon, as python/model/lexicon.txt
 App Lab installs an app's Python packages through Docker's default network, where large
 downloads stalled on our Wi-Fi, so onnxruntime and tokenizers are installed once over the
@@ -122,8 +125,27 @@ def build(model_dir: str, perspective_dir: str = None) -> str:
     return stage
 
 
-def install(board: Board, model_dir: str, perspective_dir: str = None) -> None:
+LLM_FILES = ["model.onnx", "tokenizer.json", "llm_info.json"]
+
+
+def push_llm(board: Board, llm_dir: str) -> None:
+    """Copy the language model to the board's cache, skipping files that are already there unchanged."""
+    missing = [f for f in LLM_FILES if not os.path.exists(os.path.join(llm_dir, f))]
+    if missing:
+        sys.exit(f"{llm_dir} lacks {missing}: run scripts/app/fetch_llm.py, or pass --no-llm")
+    board.shell(f"mkdir -p {REMOTE_CACHE}/llm")
+    for name in LLM_FILES:
+        local = os.path.join(llm_dir, name)
+        remote = f"{REMOTE_CACHE}/llm/{name}"
+        on_board = board.shell(f"stat -c %s {remote} 2>/dev/null || echo 0", capture=True).stdout.strip()
+        if on_board != str(os.path.getsize(local)) or name.endswith(".json"):
+            board.run("push", local, remote)
+
+
+def install(board: Board, model_dir: str, perspective_dir: str = None, llm_dir: str = None) -> None:
     stage = build(model_dir, perspective_dir)
+    if llm_dir:
+        push_llm(board, llm_dir)
     target = f"{REMOTE_APPS}/{APP}"
     # Paired devices and settings live in data/, which survives reinstalling.
     board.shell(f"mkdir -p {REMOTE_APPS} {REMOTE_CACHE} && rm -rf {REMOTE_CACHE}/data && "
@@ -136,7 +158,9 @@ def install(board: Board, model_dir: str, perspective_dir: str = None) -> None:
                     f"--only-binary=:all: --no-deps --target /cache/vendor {' '.join(PACKAGES)}")
     board.shell(f"cp -r {REMOTE_CACHE}/vendor {target}/python/vendor && "
                 f"if [ -d {REMOTE_CACHE}/data ]; then mv {REMOTE_CACHE}/data {target}/data; fi")
-    print(f"Installed to {target}")
+    if llm_dir:  # hard links: the 790 MB model is stored on the board only once
+        board.shell(f"cp -al {REMOTE_CACHE}/llm {target}/python/llm")
+    print(f"Installed to {target}" + (", with the explanation model" if llm_dir else ""))
 
 
 def app_id(board: Board) -> str:
@@ -151,17 +175,21 @@ def main(argv=None):
     parser.add_argument("--perspective-dir", default=os.path.join(ROOT, "outputs", "models", "perspective_final"),
                         help="M3 for the on-request liberal and conservative view")
     parser.add_argument("--no-perspective", action="store_true", help="leave M3 out (saves 125 MB on the board)")
+    parser.add_argument("--llm-dir", default=os.path.join(ROOT, "outputs", "llm", "qwen2.5-0.5b-instruct"),
+                        help="the small language model for explanations (scripts/app/fetch_llm.py)")
+    parser.add_argument("--no-llm", action="store_true", help="leave the explanation model out (790 MB)")
     parser.add_argument("--adb", help="path to adb (default: PATH, then Arduino App Lab's copy)")
     parser.add_argument("--serial", help="adb serial number, if more than one device is connected")
     args = parser.parse_args(argv)
     perspective_dir = None if args.no_perspective else args.perspective_dir
+    llm_dir = None if args.no_llm else args.llm_dir
 
     if args.action == "build":
         build(args.model_dir, perspective_dir)
         return
     board = Board(find_adb(args.adb), args.serial)
     if args.action == "install":
-        install(board, args.model_dir, perspective_dir)
+        install(board, args.model_dir, perspective_dir, llm_dir)
     elif args.action == "start":
         # "app stop" sometimes reports success but leaves the container running, after which
         # "app start" refuses with "App is running"; removing the container clears that.

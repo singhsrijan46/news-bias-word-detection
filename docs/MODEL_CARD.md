@@ -20,6 +20,7 @@ This card follows Mitchell et al. (2019), "Model Cards for Model Reporting". It 
   - **Flags:** a word is flagged when its share reaches 0.267, the INT8 student's best-F1 threshold averaged over 10 folds.
   - **Bands:** a flagged share below 0.6 is shown as "readers split", and 0.6 or more as "most readers would flag it".
 - **Version:** trained on 2026-11-08 from this repository; `model_info.json` stores the settings and the cross-validated scores.
+- **Not part of the scoring:** on request, a small general-purpose language model on the board, Qwen2.5-0.5B-Instruct, writes one sentence on why a word might read as one-sided. It does not change any score. Its reasons were sensible about a third of the time (`docs/EXPLANATIONS.md`).
 - **Licence and data terms:** the repository's README gives the code an MIT licence. The model is trained on MBIC, whose authors' terms apply to the data.
 
 ## Intended use
