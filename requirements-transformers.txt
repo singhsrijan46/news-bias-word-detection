@@ -3,3 +3,7 @@
 torch>=2.1
 transformers>=4.40
 tabulate>=0.9
+# ONNX export, INT8 quantization and inference: the student, the audits and the BABE test.
+# The same ONNX Runtime version as on the board (scripts/app/deploy_app.py).
+onnx>=1.17
+onnxruntime==1.28.0
