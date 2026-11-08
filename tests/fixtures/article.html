@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!-- A news-style test page for the overlay (served from the board while testing; not part of the app). -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test article for Bias Lens</title>
+  <style>body { font: 17px/1.6 Georgia, serif; max-width: 680px; margin: 20px auto; padding: 0 16px; color: #222; }
+    nav, footer, .comments { font: 14px system-ui; color: #666; } figure { margin: 16px 0; }</style>
+</head>
+<body>
+  <nav><a href="#">Home</a> · <a href="#">Politics</a> · <a href="#">World</a> · Subscribe to our newsletter today for the latest stories</nav>
+  <main>
+    <article>
+      <h1>Council approves transit plan after heated debate</h1>
+      <p class="byline">By A. Reporter · November 8, 2026</p>
+      <p>The city council voted 7 to 2 on Tuesday to approve a $40 million plan to extend bus service to the
+        northern suburbs, ending months of <em>bitter</em> argument over the city's budget.</p>
+      <p>Critics slammed the scheme as a reckless giveaway to well-connected developers, while supporters hailed it
+        as a long-overdue lifeline for <a href="#">working families</a> who have waited years for better service.</p>
+      <figure><img alt="" width="1" height="1"><figcaption>Riders wait at a crowded bus stop downtown on Monday.</figcaption></figure>
+      <p>The mayor, who has championed the plan for two years, said the first new routes could open next spring,
+        and dismissed the opposition as a radical fringe intent on blocking progress.</p>
+      <p>Opponents vowed to fight on, calling the vote a shameful betrayal of taxpayers and promising a lawsuit
+        within weeks. The council's budget office expects the routes to carry about 12,000 riders a day.</p>
+    </article>
+    <section class="comments">
+      <h2>Comments</h2>
+      <p>This council is a disgrace and a total joke, they waste our money every single year without fail.</p>
+      <p>Finally some common sense from city hall, about time somebody did something for commuters here.</p>
+    </section>
+  </main>
+  <footer><p>Copyright 2026 Test News Company. All rights reserved. Read our privacy policy and terms of use.</p></footer>
+  <script src="overlay-core.js"></script>
+  <script type="module">
+    import { secureCall } from "./biaslens-client.js";
+    window.runTest = async () => {
+      const pairing = JSON.parse(localStorage.getItem("biaslens-pairing"));
+      const extracted = BiasLensOverlay.extract(document);
+      const card = BiasLensOverlay.badge(document);
+      const result = await secureCall(pairing, { op: "analyze", text: extracted.text });
+      const marked = BiasLensOverlay.highlight(extracted, result, document);
+      card.show(result.summary);
+      const flagged = result.sentences.flatMap((s) => s.words).filter((w) => w.band !== "none");
+      return { text: extracted.text, flagged: flagged.map((w) => w.text), marked,
+               markedWords: [...document.querySelectorAll("mark.biaslens-mark")].map((m) => m.textContent) };
+    };
+  </script>
+</body>
+</html>

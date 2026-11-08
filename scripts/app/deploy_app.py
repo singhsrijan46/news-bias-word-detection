@@ -91,7 +91,7 @@ def build(model_dir: str) -> str:
     shutil.rmtree(stage, ignore_errors=True)
     shutil.copytree(os.path.join(ROOT, "app", APP), stage)
     shutil.copy(os.path.join(ROOT, "src", "models", "onnx_token_model.py"), os.path.join(stage, "python"))
-    for name in ("biaslens-client.js", "noble-bundle.js"):  # the page pairs and encrypts like the extension
+    for name in ("biaslens-client.js", "noble-bundle.js", "overlay-core.js"):  # pairing, encryption, phone bookmark
         shutil.copy(os.path.join(ROOT, "clients", "shared", name), os.path.join(stage, "assets"))
     model_out = os.path.join(stage, "python", "model")
     os.makedirs(model_out)

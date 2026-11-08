@@ -202,13 +202,33 @@ async function showModel() {
   }
 }
 
-function setUpSharing() {
-  const origin = window.location.origin;
-  const code = "(()=>{const t=(getSelection().toString()||document.body.innerText).slice(0,20000);" +
-    `window.open('${origin}/#text='+encodeURIComponent(t),'_blank')})()`;
-  $("bookmarklet").href = `javascript:${code}`;
-  $("curl").textContent = "Programs pair once (POST /api/pair/start, /api/pair/exchange, /api/pair/confirm), " +
-    "then send AES-256-GCM encrypted requests to POST /api/secure. See docs/BIAS_LENS_APP.md.";
+// The phone bookmark: the shared overlay code plus a few lines that hand the article to this board's
+// overlay.html in a new tab and mark the words when the result comes back.
+async function setUpSharing() {
+  const board = window.location.origin;
+  $("board-address").textContent = board;
+  $("api").textContent = "Programs pair once (POST /api/pair/start, /api/pair/exchange, /api/pair/confirm), then " +
+    "send AES-256-GCM encrypted requests to POST /api/secure. See docs/BIAS_LENS_APP.md.";
+  const core = await (await fetch("overlay-core.js")).text();
+  const driver = `(function(){var B=${JSON.stringify(board)};var ex=BiasLensOverlay.extract(document);` +
+    `if(ex.text.trim().length<200){alert("Bias Lens: no article text found on this page.");return}` +
+    `var card=BiasLensOverlay.badge(document);` +
+    `window.open(B+"/overlay.html#from="+encodeURIComponent(location.origin)+"&text="+encodeURIComponent(ex.text),"_blank");` +
+    `window.addEventListener("message",function f(e){if(e.origin!==B||!e.data||e.data.type!=="biaslens-result")return;` +
+    `window.removeEventListener("message",f);BiasLensOverlay.removeHighlights(document);` +
+    `BiasLensOverlay.highlight(ex,e.data.result,document);card.show(e.data.result.summary)})})();`;
+  const bookmarklet = `javascript:${encodeURIComponent(`${core}\n${driver}`)}`;
+  $("bookmarklet").href = bookmarklet;
+  $("bookmarklet-code").value = bookmarklet;
+  $("copy-bookmarklet").addEventListener("click", () => {
+    // navigator.clipboard needs HTTPS, so copy the old way from a text box.
+    const box = $("bookmarklet-code");
+    box.hidden = false;
+    box.select();
+    const copied = document.execCommand("copy");
+    box.hidden = copied;
+    $("copy-bookmarklet").textContent = copied ? "Copied" : "Select and copy the text below";
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {
