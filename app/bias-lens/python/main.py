@@ -132,8 +132,8 @@ def run_explain(text, start, end) -> dict:
         to_matrix("show_error")
         raise
     to_matrix("show_idle")
-    print(f"Explained a word in {result['seconds']:.1f} s; suggestion "
-          f"{'kept' if result['alternative'] else 'dropped'}")  # never the text
+    suggestion = "kept" if result["alternative"] else "dropped" if result["suggestions"] else "not asked for"
+    print(f"Explained a word in {result['seconds']:.1f} s; suggestion {suggestion}")  # never the text
     return {**result, "model": explainer.describe()}
 
 

@@ -87,6 +87,7 @@ python scripts/evaluate_babe.py               # the external test (docs/BABE_TES
 Put it on an Arduino UNO Q, connected over USB-C and set up in Arduino App Lab:
 
 ```bash
+python scripts/app/fetch_llm.py          # the explainer's language model and llama.cpp, 1.1 GB (or install --no-llm)
 python scripts/app/deploy_app.py install
 python scripts/app/deploy_app.py start
 ```

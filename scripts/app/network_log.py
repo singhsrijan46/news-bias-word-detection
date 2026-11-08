@@ -109,6 +109,7 @@ def fetch(board: Board, out: str) -> None:
     summary = {"seconds": round(capture["seconds"]), **context,
                "analyses_logged": sum("Analysed" in line for line in log.splitlines()),
                "perspective_views_logged": sum("Perspective view" in line for line in log.splitlines()),
+               "explanations_logged": sum("Explained a word" in line for line in log.splitlines()),
                **summarise(capture["flows"], context["app_ip"], context["board_ips"])}
     with open(os.path.join(out, "summary.json"), "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)

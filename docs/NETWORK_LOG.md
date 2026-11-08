@@ -10,7 +10,7 @@ Bias Lens promises that text is analysed on the board and sent nowhere else. The
 - **Grouping:** every flow goes into one of the groups below. Anything the app's container sent anywhere other than its web server would land in "the app and elsewhere".
 - **The workload:** during a 150-second capture on 2026-11-08, a paired browser had six texts analysed, three of 82 words and three of 820 words. It also asked for one liberal and conservative comparison. The app logged all seven, as counts. The browser reached the board over USB, through adb's port forwarding, so the requests themselves did not cross the Wi-Fi.
 
-A static check backs this up: the app's Python code imports no network client. It has no HTTP library, no `urllib` and no sockets.
+A static check backs this up: the app's Python code opens no network connections. Its one client, in `explainer.py`, talks to the board's own llama.cpp server (`docs/EXPLANATIONS.md`) through a Unix socket: a file in a private folder, which carries no IP traffic. The same client can also use a local port, but only the evaluation script does that, on the PC.
 
 ## Results
 
@@ -26,6 +26,12 @@ A static check backs this up: the app's Python code imports no network client. I
 - **The app talked to no one but its clients.** Its container exchanged packets only on its web server's port. It made no DNS lookups and sent no telemetry or anything else.
 - **The board talked to nothing beyond the home network** during the capture.
 - **The home-network traffic carries no text.** It is device discovery, which runs whether or not the app is in use. The board's own answers give its name and address.
+
+**A second capture, with the language model.** After the explainer moved to llama.cpp's server (`docs/EXPLANATIONS.md`), a second 150-second capture on the same day covered:
+- **The workload:** a restart of the app, one analysis and three explanations. The first explanation also started llama.cpp's server, and the app logged all four requests, as counts.
+- **The same picture:** the app's web server had 20 flows and 270 packets. Nothing went between the app and anywhere else, and nothing between the board and the internet. The home network carried device discovery (25 flows, 57 packets), and inside the board there were 45 flows and 5,592 packets.
+
+So llama.cpp's server, inside the app's container, used no network. The app reaches it through a Unix socket.
 
 ## Run it
 
