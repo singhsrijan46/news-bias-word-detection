@@ -9,6 +9,7 @@ let pairingSid = null;
 let lastText = "";  // the text of the analysis on show, for the perspective view
 let perspectiveAvailable = false;  // whether the board has M3, the perspective model
 let explainerAvailable = false;  // whether the board has the small language model for explanations
+let explainerModel = {};  // its name, record and typical time, from /api/info
 let selected = null;  // the marked word chosen for an explanation
 
 // An invented example, written for this app.
@@ -244,7 +245,8 @@ async function explainSelected() {
   if (!pairing || !selected) return;
   const mark = selected;
   $("explain-run").disabled = true;
-  $("explain-status").textContent = "Thinking on the board… (about 15 seconds; longer the first time)";
+  const seconds = explainerModel.typical_seconds || 30;
+  $("explain-status").textContent = `Thinking on the board… (about ${seconds} seconds; longer the first time)`;
   try {
     const data = await secureCall(pairing, { op: "explain", text: lastText,
       start: Number(mark.dataset.start), end: Number(mark.dataset.end) });
@@ -305,6 +307,7 @@ async function showModel() {
     const info = await (await fetch("/api/info")).json();
     perspectiveAvailable = Boolean(info.perspective);
     explainerAvailable = Boolean(info.explainer);
+    explainerModel = info.explainer_model || {};
     const parts = ["Model: a small student network (MiniLM-L6), distilled from a RoBERTa-base teacher"];
     if (info.precision) parts.push(`${info.precision.toUpperCase()} on the board's CPU`);
     if (info.cv_f1) parts.push(`cross-validated F1 ${info.cv_f1.toFixed(2)} on MBIC`);

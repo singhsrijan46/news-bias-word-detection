@@ -11,7 +11,7 @@ Bias Lens is the project's device. Any phone or laptop on the home network can s
 | Analyzer (`python/analyzer.py`) | Board, Linux side | Splits the text into sentences, scores every word, assigns bands, builds the summary and the heat strip |
 | Model (`python/onnx_token_model.py`, `python/model/`) | Board, Linux side, on the CPU | The distilled MiniLM-L6 student in INT8, run with ONNX Runtime |
 | Perspective model (`python/perspective/`) | Board, Linux side, on the CPU, on request | M3 in INT8: how MBIC's liberal and conservative annotators would each react to a word. It is loaded on first use. |
-| Explainer (`python/explainer.py`, `python/llm/`) | Board, Linux side, on the CPU, on request | A small language model, Qwen2.5-0.5B-Instruct in 4-bit, that writes one sentence on why readers might find a word one-sided. It is loaded on first use. |
+| Explainer (`python/explainer.py`, `python/llm/`) | Board, Linux side, on the CPU, on request | A small language model, Qwen2.5-1.5B-Instruct in 4-bit, that writes one sentence on why readers might find a word one-sided. It runs in llama.cpp's server, which the app starts on first use. |
 | Sketch (`sketch/sketch.ino`) | Board, STM32 microcontroller | Draws the heat strip, a scanning line while busy, and an idle icon on the 8 × 13 LED matrix |
 
 The Linux side tells the sketch what to show over App Lab's Bridge, using `show_busy`, `show_levels` and `show_idle`.
@@ -45,7 +45,7 @@ A word's **share** is the model's estimate of the fraction of readers who would 
 
 **Explaining one word, on request.** Selecting a marked word shows how many readers would flag it, and offers **Ask the board's AI why**. A small language model on the board then writes one sentence on why readers might find the word one-sided.
 - **Experimental:** the page labels it so, and says how often such reasons held up in testing.
-- **Speed:** about 15 seconds, or 33 seconds the first time, which includes loading the model.
+- **Speed:** about 20 seconds. The first request after the app starts also starts llama.cpp's server, and took 26 seconds, or 32 seconds right after a reboot.
 
 `docs/EXPLANATIONS.md` describes how it is kept honest and how good it is.
 
@@ -84,7 +84,7 @@ On the PC, with the board connected over USB-C:
 ```bash
 python scripts/train_student.py --final           # trains and exports the student (outputs/student/final)
 python scripts/train_perspective_model.py --final # trains and exports M3 (outputs/models/perspective_final)
-python scripts/app/fetch_llm.py                   # downloads the explainer's language model (outputs/llm, 793 MB)
+python scripts/app/fetch_llm.py                   # downloads the explainer's language model and llama.cpp (outputs/llm, 1.1 GB)
 python scripts/app/deploy_app.py install          # builds the app folder and copies it to /home/arduino/ArduinoApps
 python scripts/app/deploy_app.py start            # starts it with App Lab's CLI; also compiles and flashes the sketch
 python scripts/app/deploy_app.py forward          # optional: http://localhost:7000 on this PC
@@ -96,11 +96,15 @@ Notes from setting this up on our board:
 - **Libraries.** App Lab installs an app's `requirements.txt` through Docker's default network, where large downloads stalled on our Wi-Fi. So `deploy_app.py` installs `onnxruntime` and `tokenizers` once, over the board's own network, into `/home/arduino/.cache/bias-lens/vendor`, and copies them into the app. numpy comes with App Lab's image.
 - **Temp folder.** `adb` sessions on the board set `TMPDIR` to Android's `/data/local/tmp`, which does not exist there, and App Lab's CLI then fails with "stat /data/local/tmp". `deploy_app.py` runs the CLI with `TMPDIR=/tmp`.
 - **The perspective model.** `install` copies M3 into the app when `outputs/models/perspective_final` exists. It adds 125 MB to the app. With both models loaded, the app's container used 319 MB of the board's 3.6 GB. `--no-perspective` leaves it out, and the page then hides the button.
-- **The explainer's language model.** `install` copies it to `/home/arduino/.cache/bias-lens/llm` once, and links it into the app at each install. With it loaded, the container used 1.66 GB. It unloads after five idle minutes. `--no-llm` leaves it out.
+- **The explainer's language model.** `install` copies it, with llama.cpp's server, to `/home/arduino/.cache/bias-lens/llm` once, and links it into the app at each install.
+  - **Memory:** with it loaded, the server used 1.2 GB. Almost all of that is the model file, which the server maps into memory, so Linux can drop it and read it again when memory runs short.
+  - **Lifetime:** the app stops the server after five idle minutes.
+  - **Leaving it out:** `--no-llm` leaves the model and the server out, and the page then hides the button.
+  - **The smaller model:** `fetch_llm.py --model qwen2.5-0.5b-instruct` and `install --llm-dir outputs/llm/qwen2.5-0.5b-instruct` put the earlier 0.5B model on instead. It runs with the app's ONNX Runtime, so it needs no llama.cpp, but its reasons held up less often (`docs/EXPLANATIONS.md`).
 
 ## Trustworthy AI, by design
 
-- **Privacy:** text is analysed on the board and kept only for the request. There are no accounts, no cloud and no logs of text; the app prints only word counts. A network log of the board, taken while it analysed articles, shows the app's container talking to nothing but its own clients (`docs/NETWORK_LOG.md`).
+- **Privacy:** text is analysed on the board and kept only for the request. There are no accounts, no cloud and no logs of text; the app prints only word counts. The explainer's llama.cpp server is reached through a Unix socket, not the network, runs offline, and its log is discarded. A network log of the board, taken while it analysed articles, shows the app's container talking to nothing but its own clients (`docs/NETWORK_LOG.md`).
 - **Honest uncertainty:** the page shows how many readers would agree, not a bare "biased", and marks contested words as contested.
 - **Transparency:** the page explains where the scores come from and their limits, and shows the model and its cross-validated quality.
 - **Whose readers:** the page says the annotators lean liberal, and on request shows liberal and conservative readers apart, with the caveat the audit calls for.
@@ -112,4 +116,4 @@ Notes from setting this up on our board:
 - **Words, not stance.** It scores words, not facts or framing beyond the sentence.
 - **The ideology view is uncertain.** M3 tells the two groups apart only weakly, as the page says. Whether such a view helps readers is RQ4's question, which needs a reader study.
 - **Only on this page.** The extension and the phone bookmark show the main view. The liberal and conservative estimates, and the explanations, are on the board's own page.
-- **Explanations are often wrong.** The board's language model is small. In testing, about a third of the reasons it showed were sensible (`docs/EXPLANATIONS.md`).
+- **Explanations are often wrong.** The board's language model is small. In testing, a quarter of the reasons it showed were sensible, more than a third partly right, and a third wrong (`docs/EXPLANATIONS.md`).
