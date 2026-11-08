@@ -12,7 +12,7 @@ It covers these models:
 - **The distilled student:** MiniLM-L6, in FP32.
 - **The same student in INT8:** the model the board runs.
 
-The models are described in `docs/SOFT_LABEL_MODELS.md` and `docs/STUDENT_MODEL.md`.
+The models are described in `docs/SOFT_LABEL_MODELS.md` and `docs/STUDENT_MODEL.md`. Section 5 gives the same swap test, and a test by outlet leaning, to the sentence classifiers that the paper's authors released.
 
 ## Summary
 
@@ -21,6 +21,7 @@ The models are described in `docs/SOFT_LABEL_MODELS.md` and `docs/STUDENT_MODEL.
 - **Weakest on centre outlets.** F1 is about 0.53 on centre outlets against 0.60 to 0.64 elsewhere. Centre outlets simply have fewer biased words. The student loses more against the teacher on right-leaning outlets (−0.019) than on left-leaning ones (−0.007).
 - **The models read like liberal annotators, partly.** Even with groups of equal size, predicted shares follow liberal annotators more closely than conservative ones (Spearman's rho 0.48 against 0.40, in all 50 draws). About half of the raw gap is real. The training target pools all annotators, and liberals are the largest group (44% against 27%). M3's conservative output fits conservative annotators better, in all 10 folds.
 - **INT8 moves scores very little, but lowers them slightly.** The INT8 and FP32 scores correlate at Spearman's rho 0.993. The board uses the threshold chosen for INT8, which absorbs that shift.
+- **The authors' sentence classifiers are not symmetric; our models are.** DA-RoBERTa and MAGPIE, both fine-tuned on BABE, rate a sentence as more biased when it names the right side. Naming Trump instead of Biden raises their score by 0.07 and 0.05. Swapping to the right-coded version turns their verdict to "biased" six to seven times as often as the reverse. Our teacher's sentence scores do not move (−0.001).
 
 ## 1. Counterfactual swaps
 
@@ -116,12 +117,62 @@ These numbers compare the final student's FP32 and INT8 ONNX models on all 1,700
 
 INT8 lowers scores slightly, so at one fixed threshold it flags 8% fewer words. The board uses the threshold chosen on INT8 scores in cross-validation. There the INT8 student's F1 was 0.601, against 0.605 for the bfloat16 student, a difference that is not significant (`docs/STUDENT_MODEL.md`). Compression's other cost is to symmetry (section 1).
 
+## 5. The authors' sentence classifiers
+
+The paper's research group released sentence-level bias classifiers fine-tuned on BABE, its expert-labelled dataset. Each gives one probability that a sentence is biased:
+- **DA-RoBERTa,** from the BABE paper (Spinde et al., 2021): `mediabiasgroup/da-roberta-babe-ft`.
+- **MAGPIE** (Horych et al., 2024): `mediabiasgroup/magpie-babe-ft`.
+
+`scripts/audit_sentence_classifiers.py` gives them the swap test of section 1, on the same 4,631 sentences. Our teacher and INT8 student run alongside. For our word models, a sentence's score is its highest word score, and the verdict is "biased" when any word is flagged. The classifiers' verdict is a probability of at least 0.5.
+
+**Seen sentences.** MBIC's sentences are part of BABE, so the classifiers may have trained on an original sentence, though never on its swapped version. The table therefore uses the 4,057 pairs whose original is not in BABE. All 4,631 pairs give the same picture.
+
+| Model | Score, left-coded | Score, right-coded | Right minus left | Verdicts that change | Biased only when right-coded | Biased only when left-coded |
+| --- | --- | --- | --- | --- | --- | --- |
+| DA-RoBERTa | 0.357 | 0.398 | **+0.041** (p < 0.001) | 6.6% | 5.8% | 0.8% |
+| MAGPIE | 0.393 | 0.428 | **+0.035** (p < 0.001) | 5.4% | 4.7% | 0.7% |
+| Teacher | 0.390 | 0.389 | −0.001 (p = 0.87) | 2.3% | 1.1% | 1.2% |
+| Student, INT8 | 0.365 | 0.371 | +0.006 (p < 0.001) | 3.9% | 2.1% | 1.9% |
+
+**By pair,** on all 4,631 pairs (mean score, left-coded / right-coded):
+
+| Pair | Pairs | DA-RoBERTa | MAGPIE | Teacher | Student, INT8 |
+| --- | --- | --- | --- | --- | --- |
+| Biden / Trump | 2,577 | **0.372 / 0.441** | **0.409 / 0.459** | 0.406 / 0.405 | 0.381 / 0.393 |
+| Democrats / Republicans | 581 | 0.374 / 0.378 | 0.421 / 0.434 | 0.403 / 0.407 | 0.385 / 0.387 |
+| Democratic / Republican | 545 | 0.260 / 0.280 | 0.285 / 0.305 | 0.346 / 0.349 | 0.327 / 0.331 |
+| liberal / conservative | 201 | 0.535 / 0.476 | 0.542 / 0.527 | 0.450 / 0.426 | 0.441 / 0.403 |
+| Pelosi / McConnell | 102 | 0.357 / 0.337 | 0.348 / 0.358 | 0.347 / 0.350 | 0.317 / 0.325 |
+| pro-choice / pro-life | 93 | 0.332 / 0.333 | 0.500 / 0.528 | 0.557 / 0.568 | 0.523 / 0.567 |
+| liberals / conservatives | 93 | 0.639 / 0.573 | 0.716 / 0.681 | 0.475 / 0.473 | 0.454 / 0.447 |
+| left-wing / right-wing | 80 | 0.751 / 0.752 | 0.850 / 0.823 | 0.538 / 0.544 | 0.536 / 0.525 |
+
+- **Naming Trump makes a sentence look more biased to the classifiers.** The same sentence scores 0.07 higher with DA-RoBERTa and 0.05 higher with MAGPIE when it names Trump instead of Biden. On originals not in BABE the gaps are the same: +0.072 and +0.054.
+- **Their verdicts shift one way.** Swapping to the right side turns "not biased" into "biased" seven times as often as the reverse swap for DA-RoBERTa, and six times as often for MAGPIE.
+- **Not memory.** The shift holds whichever side the original named: +0.024 and +0.023 when it named the left, +0.048 and +0.040 when it named the right.
+- **A likely cause.** In BABE, 68% of the sentences that name Trump are labelled biased, against 57% of those naming Biden and 52% of those naming neither. A classifier can learn the name as a cue.
+- **Labels go the other way.** Like our models, the classifiers score "liberal" above "conservative".
+- **Our word models stay level.** The teacher's sentence scores do not move, and its few changed verdicts split evenly. The INT8 student shifts by 0.006, small but consistent: another sign that compression costs a little symmetry (section 1).
+
+**By outlet leaning,** on BABE's 592 test sentences that are not in MBIC. Our models never saw BABE's labels. The classifiers' model cards do not say which BABE sentences they trained on, so their scores here may be optimistic.
+
+| Model | F1 | Precision | Recall | ROC AUC | Centre outlets: F1 | Centre: recall | Centre: share flagged |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| DA-RoBERTa | 0.838 | 0.963 | 0.741 | 0.935 | 0.357 | 0.227 | 6.7% |
+| MAGPIE | 0.889 | 0.956 | 0.831 | 0.946 | 0.529 | 0.409 | 13.3% |
+| Teacher | 0.804 | 0.690 | 0.962 | 0.885 | 0.611 | 1.000 | 55.6% |
+| Student, INT8 | 0.801 | 0.698 | 0.939 | 0.881 | 0.575 | 0.955 | 56.7% |
+
+- **The classifiers are better sentence judges.** They were trained for this task on these labels.
+- **Opposite failures on centre outlets.** 24% of the centre outlets' 90 test sentences are biased. The classifiers miss most of those, with recall of 0.23 and 0.41. Our models flag more than half of all centre sentences, as on BABE's words (`docs/BABE_TEST.md`). These samples are small: 90 centre, 79 left and 70 right sentences.
+
 ## What this means for Bias Lens
 
 1. **Say whose readers.** The page already says the scores come from US crowd workers rating 2017 to 2020 news. It should also say that this pool leans liberal, and that "readers" means them.
 2. **Treat political labels with care.** "Liberal" and "liberals" are flagged far more than their counterparts in identical sentences. A per-term check, such as running this swap test before each release, should guard the shipped model.
 3. **Offer the conservative view on request.** M3 fits conservative annotators better. Show its liberal and conservative shares on request, with the weak-gap caveat.
 4. **Test symmetry after compression, not only accuracy.** INT8 kept F1, but moved some pairs' balance.
+5. **Keep word-level vote shares.** The group's own sentence classifiers score BABE's sentences better, but their verdicts shift with a party name. Our word models do not, and they show which words are at stake.
 
 ## Run it
 
@@ -131,6 +182,7 @@ python scripts/train_student.py --final       # the final student and teacher
 python scripts/audit_models.py                # swaps, outlets, groups, INT8 (outputs/audit; about 25 minutes)
 python scripts/audit_group_balance.py         # equal-sized groups (about 20 seconds)
 python scripts/train_perspective_model.py     # M3 in 10 folds
+python scripts/audit_sentence_classifiers.py  # the authors' classifiers (downloads 2 × 500 MB; GPU if present)
 ```
 
 ## Limits
@@ -139,3 +191,4 @@ python scripts/train_perspective_model.py     # M3 in 10 folds
 - **A short swap list.** Seven kinds of pair, and they are not perfect counterparts in real use.
 - **The paper's grouping.** Self-reported ideology on a −10 to 10 scale, cut at −3 and 3. Groups are small per sentence, which is why section 3 matches their sizes.
 - **One run.** One seed for every model, so small differences, such as the per-pair INT8 shifts, should be confirmed with more seeds before drawing conclusions.
+- **Sentence scores for word models.** Section 5 turns our word scores into sentence scores with a simple rule (the highest word score), chosen for the comparison.
