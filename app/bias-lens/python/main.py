@@ -4,7 +4,7 @@ Bias Lens on the Arduino UNO Q.
 Serves a web page and an API on port 7000 to devices on the home network. Devices pair
 once (a 6-digit code on the LED matrix), then send encrypted requests:
     POST /api/pair/start, /api/pair/exchange, /api/pair/confirm   pairing (see security.py)
-    POST /api/secure     encrypted {op: "analyze" | "info" | "devices" | "forget"}
+    POST /api/secure     encrypted {op: "analyze" | "perspective" | "info" | "devices" | "forget"}
     GET  /api/info       the model and its settings (nothing private)
     POST /api/analyze    plain-text analysis, refused unless data/settings.json allows unpaired use
 The model runs on the board's CPU and the LED matrix shows what is happening. No text is
@@ -25,11 +25,12 @@ from arduino.app_bricks.web_ui import WebUI  # noqa: E402
 from arduino.app_utils import App, Bridge  # noqa: E402
 from fastapi import Body, HTTPException  # noqa: E402
 
-from analyzer import Analyzer  # noqa: E402
+from analyzer import Analyzer, Perspective  # noqa: E402
 from security import Pairing, SecurityError  # noqa: E402
 
 DATA = os.path.join(os.path.dirname(HERE), "data")  # kept across redeploys
 analyzer = Analyzer.from_dir(os.path.join(HERE, "model"))
+perspective = Perspective(os.path.join(HERE, "perspective"), analyzer.threshold)  # M3, loaded on first use
 ui = WebUI()
 
 
@@ -84,6 +85,23 @@ def run_analysis(text: str) -> dict:
     return result
 
 
+def run_perspective(text: str) -> dict:
+    text = str(text).strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="No text given.")
+    if not perspective.available:
+        raise HTTPException(status_code=404, detail="The perspective model is not installed on this board.")
+    to_matrix("show_busy")
+    try:
+        result = perspective.analyze(text)
+    except Exception:
+        to_matrix("show_error")
+        raise
+    to_matrix("show_levels", "".join(str(level) for level in result["strip"]))
+    print(f"Perspective view of {len(result['words'])} words in {result['seconds']:.2f} s")  # counts only
+    return result
+
+
 def guarded(action):
     try:
         return action()
@@ -112,8 +130,10 @@ def secure(payload: dict = Body(...)):
     op = request.get("op")
     if op == "analyze":
         result = run_analysis(request.get("text", ""))
+    elif op == "perspective":
+        result = run_perspective(request.get("text", ""))
     elif op == "info":
-        result = analyzer.describe()
+        result = {**analyzer.describe(), "perspective": perspective.available}
     elif op == "devices":
         result = {"devices": pairing.list_devices(), "you": device}
     elif op == "forget":
@@ -130,7 +150,7 @@ def analyze_plain(payload: dict = Body(...)):
 
 
 def info():
-    return {**analyzer.describe(), "paired_devices": len(pairing.devices),
+    return {**analyzer.describe(), "paired_devices": len(pairing.devices), "perspective": perspective.available,
             "allow_unpaired": bool(settings().get("allow_unpaired"))}
 
 

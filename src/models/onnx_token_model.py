@@ -63,13 +63,22 @@ class OnnxTokenModel:
 
     def score(self, text: str) -> Tuple[List[Tuple[int, int]], np.ndarray]:
         """Character spans of the sentence's words, and each word's probability (NaN if truncated)."""
+        spans, scores = self.score_heads(text)
+        return spans, np.ascontiguousarray(scores[:, 0])
+
+    def score_heads(self, text: str) -> Tuple[List[Tuple[int, int]], np.ndarray]:
+        """Like score, with every output of the model: shape (words, outputs).
+
+        Single-output models give one column. M3, the perspective model, gives three: all
+        annotators, liberal ones and conservative ones (model_info.json lists them as "heads").
+        """
         encoding = self.tokenizer.encode(text)
         ids = np.array([encoding.ids], dtype=np.int64)
-        logits = self.session.run(None, {"input_ids": ids, "attention_mask": np.ones_like(ids)})[0][0, :, 0]
+        logits = self.session.run(None, {"input_ids": ids, "attention_mask": np.ones_like(ids)})[0][0]
         probs = 1.0 / (1.0 + np.exp(-logits.astype(np.float64)))
         spans = word_spans(text)
         positions = first_subword_positions(spans, encoding.offsets)
-        scores = np.full(len(spans), np.nan, dtype=np.float32)
+        scores = np.full((len(spans), probs.shape[1]), np.nan, dtype=np.float32)
         keep = positions >= 0
         scores[keep] = probs[positions[keep]]
         return spans, scores

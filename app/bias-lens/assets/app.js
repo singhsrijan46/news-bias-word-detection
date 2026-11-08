@@ -6,6 +6,8 @@ const $ = (id) => document.getElementById(id);
 const STORE = "biaslens-pairing";
 let pairing = null;
 let pairingSid = null;
+let lastText = "";  // the text of the analysis on show, for the perspective view
+let perspectiveAvailable = false;  // whether the board has M3, the perspective model
 
 // An invented example, written for this app.
 const SAMPLE = `City council backs bus expansion
@@ -153,6 +155,8 @@ function render(data) {
       mark.style.setProperty("--share", word.share);
       mark.title = `${readers(word.share)} readers would flag "${word.text}"` +
         (word.lexicon ? " (also in the paper's bias lexicon)" : "");
+      mark.dataset.start = word.start;
+      mark.dataset.title = mark.title;
       mark.tabIndex = 0;
       article.append(mark);
       cursor = word.end;
@@ -186,12 +190,60 @@ function render(data) {
     }
     top.append(heading, list);
   }
+  lastText = text;
+  $("perspective").hidden = !perspectiveAvailable;
+  $("perspective-result").hidden = true;
+  $("perspective-status").textContent = "";
   $("results").hidden = false;
+}
+
+// ---------------------------------------------------------------- liberal and conservative readers
+
+function groups(word) {
+  return `liberal readers ${readers(word.liberal).toLowerCase()}, conservative readers ` +
+    `${readers(word.conservative).toLowerCase()}`;
+}
+
+function fillList(list, words) {
+  if (!words.length) {
+    const none = listItem("No flagged word differs by 1 reader in 10 or more.");
+    none.className = "none";
+    list.replaceChildren(none);
+    return;
+  }
+  list.replaceChildren(...words.map((w) => listItem(`${w.text}: ${groups(w)}`)));
+}
+
+function renderPerspective(data) {
+  const byStart = new Map(data.words.map((w) => [w.start, w]));
+  for (const mark of $("article").querySelectorAll("mark")) {
+    const word = byStart.get(Number(mark.dataset.start));
+    mark.title = mark.dataset.title + (word ? `\nLiberal readers: ${readers(word.liberal).toLowerCase()}. ` +
+      `Conservative readers: ${readers(word.conservative).toLowerCase()}.` : "");
+  }
+  fillList($("liberal-more"), data.liberal_more);
+  fillList($("conservative-more"), data.conservative_more);
+  $("perspective-result").hidden = false;
+}
+
+async function comparePerspectives() {
+  if (!pairing || !lastText) return;
+  $("perspective-run").disabled = true;
+  $("perspective-status").textContent = "Comparing on the board…";
+  try {
+    renderPerspective(await secureCall(pairing, { op: "perspective", text: lastText }));
+    $("perspective-status").textContent = "";
+  } catch (error) {
+    $("perspective-status").textContent = `Could not compare: ${error.message}`;
+  } finally {
+    $("perspective-run").disabled = false;
+  }
 }
 
 async function showModel() {
   try {
     const info = await (await fetch("/api/info")).json();
+    perspectiveAvailable = Boolean(info.perspective);
     const parts = ["Model: a small student network (MiniLM-L6), distilled from a RoBERTa-base teacher"];
     if (info.precision) parts.push(`${info.precision.toUpperCase()} on the board's CPU`);
     if (info.cv_f1) parts.push(`cross-validated F1 ${info.cv_f1.toFixed(2)} on MBIC`);
@@ -238,6 +290,7 @@ document.addEventListener("DOMContentLoaded", () => {
   $("pair-finish").addEventListener("click", completePairing);
   $("pair-code").addEventListener("keydown", (event) => { if (event.key === "Enter") completePairing(); });
   $("analyze").addEventListener("click", analyze);
+  $("perspective-run").addEventListener("click", comparePerspectives);
   $("sample").addEventListener("click", () => {
     $("text").value = SAMPLE;
     analyze();

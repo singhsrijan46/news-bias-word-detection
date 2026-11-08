@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "app", "bias-lens", "python"))
 
-from analyzer import AGREED_SHARE, Analyzer, band, heat_strip, sentence_spans  # noqa: E402
+from analyzer import AGREED_SHARE, GAP_SHOWN, Analyzer, Perspective, band, heat_strip, sentence_spans  # noqa: E402
 from src.models.onnx_token_model import word_spans  # noqa: E402
 
 SHARES = {"slammed": 0.72, "reckless": 0.45, "shameful": 0.9}
@@ -58,3 +58,32 @@ def test_analyze_leaves_unflagged_low_scores_out_of_the_response():
     result = Analyzer(FakeModel(), threshold=0.3).analyze("Rates rose today.")
     assert result["sentences"][0]["words"] == []
     assert result["summary"]["flagged"] == 0
+
+
+# all annotators, liberal ones, conservative ones
+GROUP_SHARES = {"slammed": (0.7, 0.8, 0.5), "reckless": (0.45, 0.2, 0.6), "shameful": (0.9, 0.9, 0.85)}
+
+
+class FakeGroupModel:
+    """Scores words from a fixed table, like OnnxTokenModel.score_heads with M3's three outputs."""
+
+    def score_heads(self, text):
+        spans = word_spans(text)
+        rows = [GROUP_SHARES.get(text[a:b].lower(), (0.02, 0.02, 0.02)) for a, b in spans]
+        return spans, np.array(rows, dtype=np.float32)
+
+
+def test_perspective_lists_the_words_each_group_would_flag_more():
+    view = Perspective("unused", threshold=0.3, model=FakeGroupModel())
+    assert view.available
+    text = "Critics slammed the plan.\nIt was reckless and shameful."
+    result = view.analyze(text)
+    assert [text[w["start"]:w["end"]] for w in result["words"]] == ["slammed", "reckless", "shameful"]
+    assert [w["text"] for w in result["liberal_more"]] == ["slammed"]  # 0.8 against 0.5
+    assert [w["text"] for w in result["conservative_more"]] == ["reckless"]  # 0.6 against 0.2
+    assert abs(0.9 - 0.85) < GAP_SHOWN  # so "shameful" is in neither list
+    assert len(result["strip"]) == 13
+
+
+def test_perspective_is_unavailable_without_its_model(tmp_path):
+    assert not Perspective(str(tmp_path), threshold=0.3).available

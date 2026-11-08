@@ -14,6 +14,8 @@ install puts together, from this repository:
     app/bias-lens/                      the App Lab app: web page, Python, LED matrix sketch
     src/models/onnx_token_model.py      the inference code, copied into the app's python/
     outputs/student/final/              the trained student (scripts/train_student.py --final)
+    outputs/models/perspective_final/   M3, for the on-request liberal and conservative view
+                                        (scripts/train_perspective_model.py --final; --no-perspective leaves it out)
     data/raw/*lexicon*, seed words      the paper's bias lexicon, as python/model/lexicon.txt
 App Lab installs an app's Python packages through Docker's default network, where large
 downloads stalled on our Wi-Fi, so onnxruntime and tokenizers are installed once over the
@@ -82,8 +84,12 @@ def write_lexicon(path: str) -> int:
     return len(words)
 
 
-def build(model_dir: str) -> str:
-    """Assemble the app folder in outputs/app/bias-lens, ready to copy."""
+def build(model_dir: str, perspective_dir: str = None) -> str:
+    """Assemble the app folder in outputs/app/bias-lens, ready to copy.
+
+    With `perspective_dir` (M3, from train_perspective_model.py --final), the app also gets the
+    on-request view of liberal and conservative readers, in INT8 (125 MB).
+    """
     missing = [f for f in MODEL_FILES if not os.path.exists(os.path.join(model_dir, f))]
     if missing:
         sys.exit(f"{model_dir} lacks {missing}: run scripts/train_student.py --final first")
@@ -100,13 +106,24 @@ def build(model_dir: str) -> str:
     n_words = write_lexicon(os.path.join(model_out, "lexicon.txt"))
     with open(os.path.join(model_dir, "model_info.json"), encoding="utf-8") as f:
         info = json.load(f)
+    perspective = "no perspective model"
+    if perspective_dir:
+        missing = [f for f in MODEL_FILES if not os.path.exists(os.path.join(perspective_dir, f))]
+        if missing:
+            sys.exit(f"{perspective_dir} lacks {missing}: run scripts/train_perspective_model.py --final, "
+                     f"or pass --no-perspective")
+        perspective_out = os.path.join(stage, "python", "perspective")
+        os.makedirs(perspective_out)
+        for name in MODEL_FILES:
+            shutil.copy(os.path.join(perspective_dir, name), perspective_out)
+        perspective = "with the perspective model (M3)"
     print(f"Built {stage}: {info.get('model_name')}, flag threshold {info.get('flag_threshold')}, "
-          f"{n_words} lexicon words")
+          f"{n_words} lexicon words, {perspective}")
     return stage
 
 
-def install(board: Board, model_dir: str) -> None:
-    stage = build(model_dir)
+def install(board: Board, model_dir: str, perspective_dir: str = None) -> None:
+    stage = build(model_dir, perspective_dir)
     target = f"{REMOTE_APPS}/{APP}"
     # Paired devices and settings live in data/, which survives reinstalling.
     board.shell(f"mkdir -p {REMOTE_APPS} {REMOTE_CACHE} && rm -rf {REMOTE_CACHE}/data && "
@@ -131,16 +148,20 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("action", choices=["install", "start", "stop", "logs", "forward", "build"])
     parser.add_argument("--model-dir", default=os.path.join(ROOT, "outputs", "student", "final"))
+    parser.add_argument("--perspective-dir", default=os.path.join(ROOT, "outputs", "models", "perspective_final"),
+                        help="M3 for the on-request liberal and conservative view")
+    parser.add_argument("--no-perspective", action="store_true", help="leave M3 out (saves 125 MB on the board)")
     parser.add_argument("--adb", help="path to adb (default: PATH, then Arduino App Lab's copy)")
     parser.add_argument("--serial", help="adb serial number, if more than one device is connected")
     args = parser.parse_args(argv)
+    perspective_dir = None if args.no_perspective else args.perspective_dir
 
     if args.action == "build":
-        build(args.model_dir)
+        build(args.model_dir, perspective_dir)
         return
     board = Board(find_adb(args.adb), args.serial)
     if args.action == "install":
-        install(board, args.model_dir)
+        install(board, args.model_dir, perspective_dir)
     elif args.action == "start":
         # "app stop" sometimes reports success but leaves the container running, after which
         # "app start" refuses with "App is running"; removing the container clears that.
