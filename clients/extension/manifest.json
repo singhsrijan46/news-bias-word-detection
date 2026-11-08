@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "Bias Lens",
+  "version": "0.1.0",
+  "description": "Marks the words in news articles that readers would call biased, scored privately by your own Bias Lens board.",
+  "icons": { "16": "icons/16.png", "48": "icons/48.png", "128": "icons/128.png" },
+  "action": { "default_popup": "popup.html", "default_icon": { "16": "icons/16.png", "48": "icons/48.png" } },
+  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": ["storage", "activeTab", "scripting"],
+  "optional_host_permissions": ["http://*/*", "https://*/*"],
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.nytimes.com/*", "*://*.washingtonpost.com/*", "*://*.wsj.com/*", "*://*.usatoday.com/*",
+        "*://*.foxnews.com/*", "*://*.cnn.com/*", "*://*.nbcnews.com/*", "*://*.msnbc.com/*", "*://*.cbsnews.com/*",
+        "*://*.abcnews.go.com/*", "*://*.reuters.com/*", "*://*.apnews.com/*", "*://*.npr.org/*", "*://*.politico.com/*",
+        "*://*.thehill.com/*", "*://*.axios.com/*", "*://*.nypost.com/*", "*://*.breitbart.com/*", "*://*.huffpost.com/*",
+        "*://*.alternet.org/*", "*://*.thefederalist.com/*", "*://*.theatlantic.com/*", "*://*.vox.com/*",
+        "*://*.newsweek.com/*", "*://*.theguardian.com/*", "*://*.bbc.com/*", "*://*.bbc.co.uk/*",
+        "*://*.ndtv.com/*", "*://*.thehindu.com/*", "*://*.hindustantimes.com/*", "*://*.indianexpress.com/*",
+        "*://*.timesofindia.indiatimes.com/*"
+      ],
+      "js": ["overlay-core.js", "content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <h1>🔎 Bias Lens</h1>
+
+  <section id="connect">
+    <label for="board">Your board's address</label>
+    <input id="board" placeholder="http://192.168.1.7:7000" spellcheck="false">
+    <button id="save">Connect</button>
+  </section>
+
+  <section id="pair" hidden>
+    <p>Press <b>Show code</b>, then type the six digits that scroll across the board's LED matrix.</p>
+    <div class="row">
+      <button id="pair-start">Show code</button>
+      <input id="code" inputmode="numeric" maxlength="6" placeholder="6 digits" disabled>
+      <button id="pair-finish" disabled>Pair</button>
+    </div>
+  </section>
+
+  <section id="ready" hidden>
+    <p class="ok">Paired. Articles go to your board encrypted, and nowhere else.</p>
+    <button id="analyze" class="primary">Analyze this page</button>
+    <label class="check"><input type="checkbox" id="auto"> Highlight automatically on news sites</label>
+    <label class="check"><input type="checkbox" id="pause"> Pause on <span id="host">this site</span></label>
+    <p class="small"><a href="#" id="forget">Unpair this browser</a></p>
+  </section>
+
+  <p id="status" role="status"></p>
+  <script src="popup.js"></script>
+</body>
+</html>
