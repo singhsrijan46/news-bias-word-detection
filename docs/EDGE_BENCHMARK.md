@@ -54,6 +54,7 @@ python scripts/edge/run_on_board.py gpu-setup          # copy ncnn models, insta
 python scripts/edge/run_on_board.py gpu-start          # the GPU benchmark
 python scripts/edge/run_on_board.py fetch
 python scripts/edge/summarize_benchmark.py
+python scripts/edge/check_int8_on_board.py             # the trained student, board against PC (after deploy_app.py)
 ```
 
 - **Shorter GPU runs:** the GPU results below used `gpu-start -- --warmup 3 --check-sentences 5 --budget 30`, because the GPU is slow.
@@ -108,6 +109,25 @@ These are median times per sentence. The CPU column is ncnn on 4 threads, for a 
 3. **Its one advantage is a free CPU.** During GPU runs the CPU is almost idle, at most 0.14 of one core busy, against 3.5 to 3.9 cores during CPU runs. The GPU also stays cool, at most 46 °C.
 4. **Possible reasons.** The Adreno 702 is an entry-level GPU: OpenCL reports a single compute unit, and Turnip offers only Vulkan 1.0 on it. Each sentence also needs many small GPU jobs, so fixed costs may dominate. We did not profile further.
 
+### The trained student on the board: the same scores as on the PC
+
+The trained student's accuracy and audit numbers in INT8 were all measured with ONNX Runtime on the PC (`docs/STUDENT_MODEL.md`, `docs/AUDIT.md`). The board runs the same model file with the same ONNX Runtime, 1.28, but its Arm cores lack the dot-product instructions and use different integer kernels from the PC's x86 ones.
+
+`scripts/edge/check_int8_on_board.py` scores the same 4,118 sentences on both: MBIC's 1,700 and BABE's 2,418 new ones (`docs/BABE_TEST.md`). The board runs the model deployed with Bias Lens, after checking it is the same file. The PC is a 13th-generation Intel Core i5.
+
+| Comparison, over 127,771 words | Board INT8 against PC INT8 | Board INT8 against PC FP32 |
+| --- | --- | --- |
+| Identical scores | 36% | 0% |
+| Mean absolute difference | 0.0003 | 0.0067 |
+| Largest difference | 0.063 | 0.270 |
+| Spearman's rho | 0.9999 | 0.993 |
+| Flags that differ, at the threshold of 0.267 | 44 (0.03% of words) | 1,129 |
+| Display bands that differ | 56 | 1,605 |
+
+- **The board gives the PC's results.** Against BABE's expert labels, the INT8 student's F1 is 0.5158 on the board and on the PC, to four decimals. ROC AUC is 0.9453 on both.
+- **Compression matters, the machine does not.** INT8 moves 25 times as many flags as moving from the PC to the board.
+- **Speed holds too.** The board scored the sentences at 41.6 ms each on 4 threads, as in the benchmark above.
+
 ## What this means for the project
 
 1. **The plan holds.** A distilled student the size of MiniLM-L6 or BERT-small, in INT8, handles a typical article in about 1.3 seconds on the board's CPU and needs about 200 MB.
@@ -117,7 +137,7 @@ These are median times per sentence. The CPU column is ncnn on 4 threads, for a 
 
 ## Limits
 
-- **Speed only.** The heads are untrained, so these numbers say nothing about accuracy. How much INT8 costs in accuracy has to be measured on the trained student.
+- **Speed only, for the seven encoders.** Their heads are untrained, so those numbers say nothing about accuracy. The trained student's INT8 accuracy is in `docs/STUDENT_MODEL.md`. The section above shows the board reproduces it.
 - **No energy figures yet.** They need a USB-C power meter between the board and its power supply.
 - **One setup.** The numbers come from one board and one software image: Debian 20251210, App Lab's Python image 0.5.0 and Mesa 25.2.6.
 - **One GPU route.** The GPU was tested only through ncnn on Vulkan. OpenCL through Rusticl was not tried, and Qualcomm's own GPU driver is not part of this image.
