@@ -88,8 +88,43 @@ A model that knows when it is unsure can hold back on those words, and be right 
 
 M0 collapses past 80% because most of its biased words score near its threshold.
 
+## Topics held out
+
+With random folds, every test sentence's topic is also in the training data. `python scripts/train_token_models.py --split topic` instead holds out each of MBIC's 14 topics in turn: 14 folds of 88 to 135 sentences, so every prediction is for a topic the model never trained on. Everything else is unchanged.
+
+| Model | F1, random folds | F1, topic held out | ROC AUC, random | ROC AUC, topic held out | Share ECE, topic held out |
+| --- | --- | --- | --- | --- | --- |
+| M0 XGBoost | 0.451 | 0.454 | 0.850 | 0.847 | 0.159 |
+| M1, hard labels | 0.608 | 0.602 | 0.931 | 0.931 | 0.081 |
+| M2, vote shares | 0.617 | **0.610** | 0.938 | **0.936** | **0.014** |
+
+1. **The models carry over to new topics.** F1 falls by less than 0.01, and ROC AUC hardly moves. This matches BABE, where topics that MBIC lacks were no harder (`docs/BABE_TEST.md`).
+2. **M2's lead over M1 holds, and is now significant.** M2 is ahead in 11 of 14 held-out topics, by 0.011 in F1 (Wilcoxon p = 0.04), and in 12 of 14 in ROC AUC (p = 0.002). Its share ECE is lower in all 14.
+3. **A new topic shifts the best threshold.** Each fold's best threshold ranged from 0.23 to 0.41 for M2 and from 0.11 to 0.37 for M1, against 0.21 to 0.31 and 0.16 to 0.57 with random folds.
+
+**By held-out topic** (F1):
+
+| Topic | M0 | M1 | M2 |
+| --- | --- | --- | --- |
+| Abortion | 0.428 | 0.502 | 0.529 |
+| White nationalism | 0.468 | 0.590 | 0.563 |
+| Immigration | 0.474 | 0.589 | 0.571 |
+| Vaccines | 0.493 | 0.552 | 0.578 |
+| Gender | 0.456 | 0.571 | 0.586 |
+| Sport | 0.457 | 0.573 | 0.592 |
+| Student debt | 0.418 | 0.601 | 0.610 |
+| Gun control | 0.417 | 0.590 | 0.614 |
+| International politics and world news | 0.453 | 0.587 | 0.620 |
+| Elections 2020 | 0.422 | 0.618 | 0.636 |
+| Environment | 0.434 | 0.652 | 0.652 |
+| Trump presidency | 0.475 | 0.645 | 0.665 |
+| Middle class | 0.417 | 0.654 | 0.667 |
+| Coronavirus | 0.519 | 0.692 | 0.688 |
+
+The hardest topics to learn from the others are among the most polarised: abortion, white nationalism and immigration. M2 also has its lowest ROC AUC on abortion (0.89) and white nationalism (0.90).
+
 ## Limits and next steps
 
 - **One run, untuned.** This is one seed and one set of hyperparameters (4 epochs, learning rate 3e-5), fixed before seeing the test folds. More seeds would settle whether M2's small F1 gain is real.
-- **Random folds.** The folds are random over sentences. On BABE, an expert-labelled external test set, the models rank words as well as here, including on topics MBIC lacks (`docs/BABE_TEST.md`). A topic-held-out split is the other test in the proposal's plan.
+- **One dataset's topics.** Holding out each topic costs less than 0.01 in F1, and on BABE, an expert-labelled external test set, the models rank words as well as here (`docs/BABE_TEST.md`). Both tests stay within US political news from 2017 to 2020.
 - **Next models.** M3 adds annotator ideology. After that comes the small student distilled for the UNO Q. The on-device benchmark shows that a MiniLM-sized INT8 model handles an article in about 1.3 seconds on the board.

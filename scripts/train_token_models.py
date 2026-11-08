@@ -13,10 +13,14 @@ decision threshold: the one with the best F1 on the paper's words. Every model i
 scored on its out-of-fold predictions for the paper's words and labels; M1 and M2
 also on every token, against the annotators' vote shares.
 
+With --split topic, each of MBIC's 14 topics is held out in turn instead, so every
+prediction is for a topic the model never trained on.
+
 Usage:
     python scripts/train_token_models.py               # 10 folds, about 30 minutes on a 4 GB GPU
     python scripts/train_token_models.py --quick       # 2 of the 10 folds, 1 epoch: checks that everything runs
     python scripts/train_token_models.py --models m0   # the XGBoost baseline only
+    python scripts/train_token_models.py --split topic # 14 folds, one per topic (outputs/models/cv_topic)
 """
 
 import argparse
@@ -24,7 +28,7 @@ import json
 import os
 import sys
 import time
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -55,6 +59,16 @@ def make_folds(n_sentences: int, folds: int, seed: int) -> np.ndarray:
     for k in range(folds):
         fold_of[order[k::folds]] = k
     return fold_of
+
+
+def topic_folds(annotations: pd.DataFrame) -> Tuple[np.ndarray, List[str]]:
+    """Fold number of every sentence when each topic is held out in turn, and the topic of each fold.
+
+    Sentences are in the order of build_sentence_targets: first appearance in the annotations.
+    """
+    topics = annotations.groupby("text", sort=False)["topic"].first().astype(str).str.strip().str.lower()
+    names = sorted(set(topics))
+    return np.array([names.index(t) for t in topics]), names
 
 
 def split_validation(train_ids: np.ndarray, share: float, seed: int):
@@ -112,14 +126,18 @@ def main(argv=None):
     parser.add_argument("--model-name", default="FacebookAI/roberta-base")
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--quick", action="store_true", help="2 folds, 1 epoch")
-    parser.add_argument("--out", default=os.path.join(ROOT, "outputs", "models", "cv"))
+    parser.add_argument("--split", choices=["random", "topic"], default="random",
+                        help="random: sentences in seeded random folds; topic: each topic held out in turn")
+    parser.add_argument("--out", help="default: outputs/models/cv, or outputs/models/cv_topic with --split topic")
     args = parser.parse_args(argv)
     if args.quick:
         args.max_folds, args.epochs = 2, 1
+    args.out = args.out or os.path.join(ROOT, "outputs", "models", "cv" if args.split == "random" else "cv_topic")
     os.makedirs(args.out, exist_ok=True)
 
     loader = MBICDataLoader()
-    targets = build_sentence_targets(loader.load_annotations())
+    annotations = loader.load_annotations()
+    targets = build_sentence_targets(annotations)
     dt = loader.load_token_dataset(drop_missing_tfidf=False).reset_index(drop=True)
     paper = align_paper_words(targets, dt).set_index("dt_index").loc[dt.index].reset_index()
     found = (paper.sentence_id >= 0) & (paper.word_index >= 0)
@@ -127,7 +145,12 @@ def main(argv=None):
                 f"{int(found.sum())} of {len(paper)} paper words matched to tokens")
     paper["share"] = [targets[s].shares[w] if ok else np.nan
                       for s, w, ok in zip(paper.sentence_id, paper.word_index, found)]
-    fold_of = make_folds(len(targets), args.folds, args.seed)
+    fold_names = None
+    if args.split == "topic":
+        fold_of, fold_names = topic_folds(annotations)
+        args.folds = len(fold_names)
+    else:
+        fold_of = make_folds(len(targets), args.folds, args.seed)
     paper["fold"] = np.where(paper.sentence_id >= 0, fold_of[paper.sentence_id.clip(lower=0)], -1)
 
     features = [c for c in dt.columns if c not in NON_FEATURE_COLS and pd.api.types.is_numeric_dtype(dt[c])]
@@ -170,7 +193,8 @@ def main(argv=None):
             oof[m][test_rows] = test_scores
             flags[m][test_rows] = (test_scores >= threshold).astype(int)
             fold_f1 = detection_metrics(paper.label4.values[test_rows], test_scores, flags[m][test_rows])["f1"]
-            logger.info(f"fold {k + 1}/{n_run} {m}: test F1 {fold_f1:.3f} at threshold {threshold:.3f} "
+            held_out = f" ({fold_names[k]} held out)" if fold_names else ""
+            logger.info(f"fold {k + 1}/{n_run}{held_out} {m}: test F1 {fold_f1:.3f} at threshold {threshold:.3f} "
                         f"({time.time() - started:.0f} s)")
 
     scored = np.where(found & (paper.fold < n_run) & (paper.fold >= 0))[0]
@@ -188,8 +212,18 @@ def main(argv=None):
     token_frame = pd.DataFrame(token_rows)
     results = evaluate(paper, scored, args.models, oof, flags, token_frame)
     report = {"settings": {**vars(args), "paper_words_scored": int(len(scored)),
-                           "paper_words_unmatched": int((~found).sum())},
+                           "paper_words_unmatched": int((~found).sum()), "fold_topics": fold_names},
               "thresholds": thresholds, "results": results}
+    if fold_names:  # each held-out topic's own result
+        rows = []
+        for k, name in enumerate(fold_names[:n_run]):
+            r = scored[paper.fold.values[scored] == k]
+            for m in args.models:
+                d = detection_metrics(paper.label4.values[r], oof[m][r], flags[m][r])
+                rows.append({"topic": name, "model": m, "words": int(len(r)),
+                             "positive_share": float(paper.label4.values[r].mean()), "f1": d["f1"],
+                             "precision": d["precision"], "recall": d["recall"], "roc_auc": d["roc_auc"]})
+        pd.DataFrame(rows).to_csv(os.path.join(args.out, "per_topic.csv"), index=False)
 
     paper_out = paper.copy()
     for m in args.models:
