@@ -49,6 +49,25 @@
       </div>
       <article id="article"></article>
       <div id="top"></div>
+      <div id="perspective" class="perspective" hidden>
+        <h2>Liberal and conservative readers</h2>
+        <p class="small">MBIC's annotators also gave their politics. A second model on the board estimates how its
+          liberal and its conservative annotators would react to each word. It is larger, so it takes longer:
+          about 8 seconds for an article.</p>
+        <div class="actions">
+          <button id="perspective-run">Compare them</button>
+          <span id="perspective-status" role="status" aria-live="polite"></span>
+        </div>
+        <div id="perspective-result" hidden>
+          <div class="columns">
+            <div><h3>Liberal readers would flag more</h3><ol id="liberal-more"></ol></div>
+            <div><h3>Conservative readers would flag more</h3><ol id="conservative-more"></ol></div>
+          </div>
+          <p class="small">Read these differences with care. This model matches conservative annotators better than
+            the main one does, but it tells the two groups apart only weakly, so a single word's difference is
+            uncertain. Hover over or tap a marked word to see both groups' estimates.</p>
+        </div>
+      </div>
     </section>
 
     <details class="about">
@@ -62,6 +81,11 @@
           These words are contested: reasonable readers disagree about them.</li>
         <li><span class="chip agreed">Most readers would flag it</span> marks words that 6 or more readers in 10 would flag.</li>
       </ul>
+      <p>Whose readers: MBIC's annotators lean liberal. 44% of them described themselves as liberal and 27% as
+        conservative, so "readers" means this group of people. After an analysis, <b>Compare them</b> shows
+        estimates for liberal and for conservative readers separately.</p>
+      <p>Even a neutral article shows some flags, mostly "readers split". Experts mark fewer words than these
+        readers do, and in a test they marked only about a third of the "readers split" words.</p>
       <p>A highlight is a prompt to look again, not a ruling. The model reflects those annotators' judgements of
         US political news in English. It can miss words that are new or rare, and it can be wrong.</p>
       <p>Privacy: the text is analysed on this board, kept only while it is being analysed, and not sent anywhere.</p>
