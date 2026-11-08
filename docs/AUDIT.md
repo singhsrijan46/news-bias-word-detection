@@ -117,6 +117,8 @@ These numbers compare the final student's FP32 and INT8 ONNX models on all 1,700
 
 INT8 lowers scores slightly, so at one fixed threshold it flags 8% fewer words. The board uses the threshold chosen on INT8 scores in cross-validation. There the INT8 student's F1 was 0.601, against 0.605 for the bfloat16 student, a difference that is not significant (`docs/STUDENT_MODEL.md`). Compression's other cost is to symmetry (section 1).
 
+These INT8 numbers hold on the board itself. On 4,118 sentences, the board's scores differ from the PC's by 0.0003 on average, and 44 of 127,771 words change flag (`docs/EDGE_BENCHMARK.md`).
+
 ## 5. The authors' sentence classifiers
 
 The paper's research group released sentence-level bias classifiers fine-tuned on BABE, its expert-labelled dataset. Each gives one probability that a sentence is biased:
