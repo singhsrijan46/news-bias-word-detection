@@ -1,0 +1,14 @@
+body { width: 300px; margin: 0; padding: 12px 14px; font: 13px/1.45 system-ui, sans-serif; color: #1d232a; }
+h1 { font-size: 16px; margin: 0 0 10px; }
+section { margin-bottom: 10px; }
+label { display: block; font-weight: 600; margin-bottom: 4px; }
+input:not([type]) , input[inputmode] { font: inherit; padding: 5px 8px; border: 1px solid #d9dde1; border-radius: 6px; }
+#board { width: 100%; box-sizing: border-box; margin-bottom: 6px; }
+#code { width: 80px; }
+.row { display: flex; gap: 6px; align-items: center; }
+button { font: inherit; padding: 5px 10px; border: 1px solid #d9dde1; border-radius: 6px; background: #fff; cursor: pointer; }
+button.primary { background: #0f6e6e; border-color: #0f6e6e; color: #fff; font-weight: 600; width: 100%; margin-bottom: 8px; }
+.check { font-weight: 400; display: flex; gap: 6px; align-items: center; margin: 4px 0; }
+.ok { color: #0f6e6e; margin-top: 0; }
+.small { font-size: 12px; }
+#status { color: #b03a2e; min-height: 1em; margin: 6px 0 0; }

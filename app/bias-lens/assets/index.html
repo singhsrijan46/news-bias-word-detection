@@ -67,13 +67,23 @@
       <p>Privacy: the text is analysed on this board, kept only while it is being analysed, and not sent anywhere.</p>
     </details>
 
-    <details class="about">
-      <summary>Send text from your other devices</summary>
-      <p>Drag this link to your browser's bookmarks bar: <a id="bookmarklet" href="#">Bias Lens</a>.
-        On any news page, select some text (or nothing, for the whole page) and click the bookmark.
-        The text goes straight to this board.</p>
-      <p>Programs can call the API:</p>
-      <pre id="curl"></pre>
+    <details class="about" id="devices">
+      <summary>Use Bias Lens while you read</summary>
+      <h3>On a laptop: the Chrome or Edge extension</h3>
+      <p>The Bias Lens extension marks articles on news sites automatically, right on the page. Load it from
+        the project's <code>clients/extension</code> folder (see <code>docs/BIAS_LENS_CLIENTS.md</code>), then
+        connect it to this board's address, <b id="board-address"></b>, and pair it with a code from the LED matrix.</p>
+      <h3>On a phone: Chrome</h3>
+      <ol>
+        <li>Pair this phone's browser with the board on this page (only once).</li>
+        <li><button id="copy-bookmarklet">Copy the bookmark</button> Then bookmark any page, edit that bookmark,
+          name it <b>Bias Lens</b>, and paste into its address (URL).</li>
+        <li>On a news article: tap the address bar, type <b>Bias Lens</b> and tap the bookmark. A board tab opens,
+          reads the article, closes, and the highlights appear on the article. Tap a marked word to see its share.</li>
+      </ol>
+      <p>On a computer, you can also drag this link to the bookmarks bar: <a id="bookmarklet" href="#">Bias Lens</a>.</p>
+      <textarea id="bookmarklet-code" readonly hidden></textarea>
+      <p id="api" class="small"></p>
     </details>
   </main>
 
