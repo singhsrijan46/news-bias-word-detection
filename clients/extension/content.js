@@ -13,7 +13,14 @@
     if (!manual && extracted.text.trim().length < 600) return; // not an article page
     running = true;
     BiasLensOverlay.removeHighlights(document);
-    const card = BiasLensOverlay.badge(document);
+    // Explanations need the exact text the board analysed: the word's place is an offset into it.
+    const card = BiasLensOverlay.badge(document, {
+      explain: (start, end) => chrome.runtime.sendMessage({ type: "explain", text: extracted.text, start, end })
+        .then((reply) => {
+          if (reply.error) throw new Error(reply.error);
+          return reply.result;
+        }),
+    });
     try {
       const reply = await chrome.runtime.sendMessage({ type: "analyze", text: extracted.text });
       if (reply.error) {

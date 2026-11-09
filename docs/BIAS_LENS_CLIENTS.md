@@ -19,7 +19,7 @@ Almost every news site uses HTTPS, so the board would see only encrypted bytes a
 3. **Connect it:** click the Bias Lens icon and type the board's address, as shown on the board's page, for example `http://192.168.1.7:7000`. Click **Connect**. The browser asks for permission to reach exactly that address and nothing else.
 4. **Pair it:** click **Show code**. Six digits scroll across the board's LED matrix; type them in and click **Pair**. The matrix shows a heart.
 
-After that, articles on the listed news sites, such as nytimes.com, foxnews.com, reuters.com, theguardian.com and ndtv.com (the full list is in `manifest.json`), are marked automatically about a second and a half after they load. A card in the corner shows the heat strip and can hide the highlights. For any other page, click the icon and choose **Analyze this page**. You can pause the extension on a site, turn off automatic highlighting, or unpair, all from the same window.
+After that, articles on the listed news sites, such as nytimes.com, foxnews.com, reuters.com, theguardian.com and ndtv.com (the full list is in `manifest.json`), are marked automatically about a second and a half after they load. A card in the corner shows the heat strip and can hide the highlights. Click a marked word to see its line in the card, and **Ask the board's AI why** for a one-sentence explanation from the board's language model, in about 20 seconds. For any other page, click the icon and choose **Analyze this page**. You can pause the extension on a site, turn off automatic highlighting, or unpair, all from the same window.
 
 ## The phone bookmark (Chrome on Android)
 

@@ -46,6 +46,10 @@ async function handle(message) {
     case "analyze":
       if (!s.pairing) throw new Error("Not paired with a Bias Lens board yet: open the extension's popup.");
       return { result: await secureCall(s.pairing, { op: "analyze", text: message.text }) };
+    case "explain":
+      if (!s.pairing) throw new Error("Not paired with a Bias Lens board yet: open the extension's popup.");
+      return { result: await secureCall(s.pairing, { op: "explain", text: message.text,
+                                                     start: message.start, end: message.end }) };
     default:
       throw new Error(`Unknown request ${message.type}`);
   }
