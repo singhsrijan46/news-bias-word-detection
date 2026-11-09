@@ -69,7 +69,7 @@ The response gives:
 
 Paired devices send these requests encrypted to `POST /api/secure` (`docs/BIAS_LENS_CLIENTS.md`):
 - **`op: "analyze"`:** the analysis above.
-- **`op: "explain"`** with the analysed `text` and a word's `start` and `end`: the word's share, band and lexicon entry, as measured by the board, and the language model's `reason`, or `null` if it did not pass the checks.
+- **`op: "explain"`** with the analysed `text` and a word's `start` and `end`: the word's share, band and lexicon entry, as measured by the board, and the language model's `reason`, or `null` if it did not pass the checks. A reason that failed comes back as `unchecked_reason`, with `reason_problem` saying which check it failed ("too long", "it repeats the sentence" and so on); the page and the extension show it under that warning.
 - **`op: "perspective"`:** M3's view of the same text, for each word either group might flag:
   - `words`: each word's span, `liberal` and `conservative` shares.
   - `liberal_more` and `conservative_more`: up to six words each, where one group's share is at least 0.1 higher.
@@ -115,5 +115,5 @@ Notes from setting this up on our board:
 - **Narrow training data.** The model learned from MBIC: English, US political news from 2017 to 2020, and US crowd workers. It may miss new terms, and it reflects those annotators.
 - **Words, not stance.** It scores words, not facts or framing beyond the sentence.
 - **The ideology view is uncertain.** M3 tells the two groups apart only weakly, as the page says. Whether such a view helps readers is RQ4's question, which needs a reader study.
-- **Only on this page.** The extension and the phone bookmark show the main view. The liberal and conservative estimates, and the explanations, are on the board's own page.
+- **Not everything everywhere.** The liberal and conservative estimates are only on the board's own page. Explanations are on the page and in the extension, not in the phone bookmark.
 - **Explanations are often wrong.** The board's language model is small. In testing, a quarter of the reasons it showed were sensible, more than a third partly right, and a third wrong (`docs/EXPLANATIONS.md`).

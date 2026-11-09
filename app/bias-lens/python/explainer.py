@@ -320,15 +320,30 @@ def longest_copied_run(reason: str, sentence: str) -> int:
     return best
 
 
+def tidy_reason(text: str) -> str:
+    return re.sub(r"\s+", " ", text).strip().rstrip(".,;:")
+
+
+def reason_problem(text: str, sentence: str) -> Optional[str]:
+    """Why the model's reason fails the checks, in words for the page, or None if it passes."""
+    text = tidy_reason(text)
+    words = text.split()
+    if not words:
+        return "no answer"
+    if len(words) < 3:
+        return "too short"
+    if len(words) > MAX_REASON_WORDS:
+        return "too long"
+    if text.lower().startswith(("sentence", "word")):
+        return "it repeats the question"
+    if longest_copied_run(text, sentence) > MAX_COPIED_WORDS:
+        return "it repeats the sentence"
+    return None
+
+
 def clean_reason(text: str, sentence: str) -> Optional[str]:
     """The model's reason as a short clause in its own words, or None."""
-    text = re.sub(r"\s+", " ", text).strip().rstrip(".,;:")
-    words = text.split()
-    if not 3 <= len(words) <= MAX_REASON_WORDS or text.lower().startswith(("sentence", "word")):
-        return None
-    if longest_copied_run(text, sentence) > MAX_COPIED_WORDS:
-        return None
-    return text
+    return None if reason_problem(text, sentence) else tidy_reason(text)
 
 
 def full_reason(word: str, reason: str) -> str:
@@ -443,8 +458,8 @@ class Explainer:
             lm = self._model()
             try:
                 # Stop at the end of the sentence, but not inside an abbreviation such as "U.S.".
-                reason = clean_reason(lm.complete(reason_prompt(shown, word), [". ", "\n"], MAX_REASON_TOKENS),
-                                      shown)
+                raw_reason = lm.complete(reason_prompt(shown, word), [". ", "\n"], MAX_REASON_TOKENS)
+                reason = clean_reason(raw_reason, shown)
                 alternative = clean_alternative(lm.complete(alternative_prompt(shown, word), ['"', "\n"],
                                                             MAX_ALTERNATIVE_TOKENS)) if suggest else ""
             except Exception:
@@ -461,6 +476,11 @@ class Explainer:
         return {
             "word": word, "share": round(share, 3), "band": band, "lexicon": in_lexicon,
             "reason": full_reason(word, reason) if reason else None,
+            # A reason that failed the checks, as the model wrote it, and why it failed: the page shows it
+            # under a warning instead of hiding it.
+            "unchecked_reason": (full_reason(word, tidy_reason(raw_reason))
+                                 if not reason and tidy_reason(raw_reason) else None),
+            "reason_problem": reason_problem(raw_reason, shown),
             "suggestions": suggest,
             "alternative": alternative if ok else None,
             "alternative_share": round(replacement_share, 3) if ok else None,

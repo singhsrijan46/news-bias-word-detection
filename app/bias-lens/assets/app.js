@@ -227,8 +227,10 @@ function selectWord(mark) {
 function renderExplanation(data) {
   $("explain-reason").textContent = data.reason
     ? `AI (experimental): ${data.reason}`
-    : "The AI's answer did not pass the board's checks (it was too long, or repeated the sentence), so it is " +
-      "not shown.";
+    : data.unchecked_reason
+      ? `AI (experimental, failed the board's checks: ${data.reason_problem}; read with extra care): ` +
+        data.unchecked_reason
+      : "The AI gave no answer for this word.";
   $("explain-alternative").hidden = !data.suggestions;
   $("explain-alternative").textContent = data.alternative
     ? `A more neutral word: "${data.alternative}". Checked on the board: ${readers(data.alternative_share).toLowerCase()} ` +

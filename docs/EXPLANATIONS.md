@@ -31,7 +31,7 @@ A network log taken while the board explained words shows no traffic from the ap
 
 1. **The facts do not come from the language model.**
 2. **The model finishes a sentence that the code starts:** *Some readers might find "X" one-sided here because it…* Decoding is greedy, so the same word in the same sentence always gets the same answer. A sentence longer than 600 characters is cut to that much around the word, for the prompt only.
-3. **Only short reasons in the model's own words are shown:** at most 20 words, and repeating at most 3 words of the sentence in a row. In testing, longer reasons and reasons that copied the sentence were mostly confused. One of those repeated the offensive wording of its source sentence.
+3. **Only short reasons in the model's own words pass the checks:** at most 20 words, and repeating at most 3 words of the sentence in a row. In testing, longer reasons and reasons that copied the sentence were mostly confused. One of those repeated the offensive wording of its source sentence. A reason that fails is still shown, under a warning that names the check it failed, so a reader can see everything the model wrote.
 4. **No replacement words.** Asked for a more neutral word, both models often changed the meaning. The 0.5B model turned "extreme" into "moderate". The 1.5B model on the board turned "kill" into "target", and "lied" into "allegedly".
    - **No way to check meaning:** the bias-word model can check that a replacement is less loaded, but not that it means the same. Its check even favours words that say less: "battleground" became "location".
    - **Still in the code:** the code can offer replacements, tested with the bias-word model, for a model whose `llm_info.json` turns them on.

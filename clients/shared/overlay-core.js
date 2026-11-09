@@ -106,6 +106,8 @@
         mark.dataset.biaslens = readers(word.share) + " readers would flag “" + word.text + "”" +
           (word.lexicon ? " (also in the paper's bias lexicon)" : "");
         mark.title = mark.dataset.biaslens;
+        mark.dataset.biaslensStart = word.start; // where the word is in the analysed text, for explanations
+        mark.dataset.biaslensEnd = word.end;
         piece.parentNode.replaceChild(mark, piece);
         mark.appendChild(piece);
         count++;
@@ -123,8 +125,20 @@
     }
   }
 
+  // The board's explanation of one word, as plain text. Model text is set with textContent, never as HTML.
+  function explanationText(data) {
+    const reason = data.reason ? "AI (experimental): " + data.reason
+      : data.unchecked_reason ? "AI (experimental, failed the board's checks: " + data.reason_problem +
+        "; read with extra care): " + data.unchecked_reason
+      : "The AI gave no answer for this word.";
+    const model = (data.model && data.model.name) || "a small language model";
+    return reason + " Written by " + model + " on the board in " + data.seconds +
+      " s. Treat it as a prompt to think, not a fact.";
+  }
+
   // A small card in the corner, in a shadow root so the page's styles cannot reach it.
-  function badge(doc) {
+  // options.explain(start, end), when given, asks the board's AI about a clicked word and resolves to its answer.
+  function badge(doc, options) {
     let host = doc.querySelector(".biaslens-host");
     if (!host) {
       host = doc.createElement("div");
@@ -153,9 +167,27 @@
     const body = root.querySelector(".body");
     const tip = root.querySelector(".tip");
     // On phones there is no hover: tapping a marked word shows its line here.
+    let current = null;
     doc.addEventListener("click", function (event) {
       const mark = event.target.closest && event.target.closest("mark.biaslens-mark");
-      if (mark) tip.textContent = mark.dataset.biaslens;
+      if (!mark) return;
+      current = mark;
+      tip.textContent = mark.dataset.biaslens;
+      if (!(options && options.explain) || mark.dataset.biaslensStart === undefined) return;
+      const ask = doc.createElement("button");
+      ask.textContent = "Ask the board's AI why";
+      ask.style.marginTop = "6px";
+      const answer = doc.createElement("div");
+      answer.style.marginTop = "6px";
+      ask.onclick = function () {
+        ask.disabled = true;
+        answer.textContent = "Thinking on the board… (about 20 seconds; longer the first time)";
+        options.explain(Number(mark.dataset.biaslensStart), Number(mark.dataset.biaslensEnd)).then(
+          function (data) { if (current === mark) answer.textContent = explanationText(data); },
+          function (error) { if (current === mark) answer.textContent = "Could not explain: " + error.message; }
+        ).finally(function () { ask.disabled = false; });
+      };
+      tip.append(doc.createElement("br"), ask, answer);
     });
     return {
       show: function (summary) {
@@ -178,7 +210,8 @@
           toggle.textContent = hidden ? "Show highlights" : "Hide highlights";
         };
         body.append(strip, line, toggle);
-        tip.textContent = "Tap or hover over a marked word to see how many readers would flag it.";
+        tip.textContent = "Tap or hover over a marked word to see how many readers would flag it." +
+          (options && options.explain ? " Click one to ask the board's AI why." : "");
       },
       error: function (message) {
         body.textContent = message;
@@ -187,5 +220,5 @@
   }
 
   global.BiasLensOverlay = { extract: extract, highlight: highlight, removeHighlights: removeHighlights,
-    badge: badge, readers: readers };
+    badge: badge, readers: readers, explanationText: explanationText };
 })(typeof window !== "undefined" ? window : this);

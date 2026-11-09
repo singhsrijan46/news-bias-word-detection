@@ -95,6 +95,19 @@ def test_models_without_reliable_suggestions_are_not_asked_for_one():
     assert len(lm.prompts) == 1  # only the reason was generated
 
 
+def test_a_reason_that_fails_the_checks_comes_back_labelled_not_hidden():
+    passed = explain(FakeLM("implies a harsh reaction rather than a description", "criticized", suggest=False))
+    assert passed["unchecked_reason"] is None and passed["reason_problem"] is None
+    long_reason = "implies " + " ".join(["a very harsh and one-sided reaction"] * 4)
+    failed = explain(FakeLM(long_reason, "criticized", suggest=False))
+    assert failed["reason"] is None and failed["reason_problem"] == "too long"
+    assert failed["unchecked_reason"].startswith('Some readers might find "slammed" one-sided here because it implies')
+    copied = explain(FakeLM("says critics slammed the plan, as they did", "", suggest=False))
+    assert copied["reason_problem"] == "it repeats the sentence"
+    empty = explain(FakeLM("", "", suggest=False))
+    assert empty["unchecked_reason"] is None and empty["reason_problem"] == "no answer"
+
+
 class Named:
     def __init__(self, name, shape=None):
         self.name, self.shape = name, shape
