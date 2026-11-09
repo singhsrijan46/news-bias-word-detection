@@ -12,7 +12,7 @@ Bias Lens is the project's device. Any phone or laptop on the home network can s
 | Model (`python/onnx_token_model.py`, `python/model/`) | Board, Linux side, on the CPU | The distilled MiniLM-L6 student in INT8, run with ONNX Runtime |
 | Perspective model (`python/perspective/`) | Board, Linux side, on the CPU, on request | M3 in INT8: how MBIC's liberal and conservative annotators would each react to a word. It is loaded on first use. |
 | Explainer (`python/explainer.py`, `python/llm/`) | Board, Linux side, on the CPU, on request | A small language model, Qwen2.5-1.5B-Instruct in 4-bit, that writes one sentence on why readers might find a word one-sided. It runs in llama.cpp's server, which the app starts on first use. |
-| Sketch (`sketch/sketch.ino`) | Board, STM32 microcontroller | Draws the heat strip, a scanning line while busy, and an idle icon on the 8 × 13 LED matrix |
+| Sketch (`sketch/sketch.ino`) | Board, STM32 microcontroller | Animates the 8 × 13 LED matrix in its 8 brightness levels, about 50 frames a second, crossfading between modes: an idle eye, a magnifier reading while busy, the heat strip (brighter where more readers would flag), the pairing code, a heart when paired, and a sad face on errors. It computes its own sine and cosine: the firmware's sinf and cosf stall the board's Bridge |
 
 The Linux side tells the sketch what to show over App Lab's Bridge, using `show_busy`, `show_levels` and `show_idle`.
 
